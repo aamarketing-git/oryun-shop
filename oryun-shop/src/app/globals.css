@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Toss-inspired palette */
+    --background: 0 0% 100%;             /* white */
+    --foreground: 213 22% 13%;           /* #191F28 toss ink */
+
+    --muted: 210 17% 96%;                /* #F2F4F6 toss gray-bg */
+    --muted-foreground: 213 9% 58%;      /* #8B95A1 toss gray text */
+
+    --border: 213 16% 90%;               /* #E5E8EB */
+    --input: 213 16% 90%;
+    --ring: 217 91% 58%;                 /* #3182F6 toss blue */
+
+    --primary: 217 91% 58%;              /* toss blue as primary */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 17% 96%;
+    --secondary-foreground: 213 22% 13%;
+
+    --accent: 214 100% 95%;              /* #E8F1FE light blue */
+    --accent-foreground: 217 91% 58%;
+
+    --destructive: 353 86% 60%;          /* #F04452 toss red */
+    --destructive-foreground: 0 0% 100%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 213 22% 13%;
+
+    --radius: 14px;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  /* Toss-style focus ring */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer components {
+  /* Container */
+  .apple-container {
+    @apply mx-auto w-full max-w-[1024px] px-5 md:px-8;
+  }
+
+  .hero-section {
+    @apply py-8 md:py-12 text-center;
+  }
+
+  /* Product card — Toss soft rounded */
+  .product-card {
+    @apply bg-card rounded-2xl overflow-hidden
+           transition-all duration-200 ease-out
+           hover:scale-[1.01];
+  }
+
+  /* Primary button — Toss blue, rounded rectangle, bold */
+  .btn-apple {
+    @apply inline-flex items-center justify-center
+           rounded-[14px] bg-primary px-6 py-3
+           text-[15px] font-semibold text-white
+           transition-colors duration-200
+           hover:bg-[#1B64DA]
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-apple-secondary {
+    @apply inline-flex items-center justify-center
+           rounded-[14px] border border-border bg-muted px-6 py-3
+           text-[15px] font-semibold text-foreground
+           transition-colors duration-200
+           hover:bg-[#E5E8EB];
+  }
+
+  .link-apple {
+    @apply text-primary inline-flex items-center gap-1 text-sm font-medium
+           hover:underline underline-offset-2;
+  }
+
+  .section-eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground;
+  }
+
+  /* Toss-style full-width block button */
+  .btn-toss-block {
+    @apply w-full inline-flex items-center justify-center
+           rounded-[14px] bg-primary px-6 py-3.5
+           text-[15px] font-semibold text-white
+           transition-colors duration-200 hover:bg-[#1B64DA]
+           disabled:opacity-50;
+  }
+}

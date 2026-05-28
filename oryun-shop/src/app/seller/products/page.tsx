@@ -1,0 +1,106 @@
+import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
+import { formatKRW } from '@/lib/utils';
+
+const STATUS_LABEL: Record<string, string> = {
+  draft: '작성중',
+  pending: '승인 대기',
+  approved: '판매중',
+  hidden: '비공개',
+  rejected: '거절',
+};
+
+const STATUS_COLOR: Record<string, string> = {
+  draft: 'bg-gray-100 text-gray-700',
+  pending: 'bg-amber-100 text-amber-800',
+  approved: 'bg-green-100 text-green-800',
+  hidden: 'bg-gray-200 text-gray-700',
+  rejected: 'bg-red-100 text-red-700',
+};
+
+export default async function SellerProductsPage() {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect('/auth/login');
+
+  const { data: seller } = await supabase.from('sellers').select('id').eq('user_id', user.id).single();
+  if (!seller) redirect('/');
+
+  const { data: products } = await supabase
+    .from('products')
+    .select('*, categories(name)')
+    .eq('seller_id', seller.id)
+    .order('created_at', { ascending: false });
+
+  return (
+    <div>
+      <div className="flex items-end justify-between">
+        <div>
+          <p className="section-eyebrow">Seller</p>
+          <h1 className="mt-2 text-3xl font-semibold">내 상품</h1>
+        </div>
+        <Link href="/seller/products/new" className="btn-apple">
+          상품 등록
+        </Link>
+      </div>
+
+      <div className="mt-8 overflow-hidden rounded-2xl border border-gray-200 bg-white">
+        <table className="w-full text-sm">
+          <thead className="border-b border-gray-200 bg-gray-50 text-left text-xs uppercase tracking-wider text-gray-500">
+            <tr>
+              <th className="px-6 py-3">상품명</th>
+              <th className="px-6 py-3">카테고리</th>
+              <th className="px-6 py-3 text-right">가격</th>
+              <th className="px-6 py-3 text-center">재고</th>
+              <th className="px-6 py-3 text-center">상태</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {products?.map((p: any) => (
+              <tr key={p.id}>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    {p.image_url && (
+                      <img
+                        src={p.image_url}
+                        alt=""
+                        className="h-10 w-10 rounded-lg bg-gray-50 object-cover"
+                      />
+                    )}
+                    <span className="font-medium">{p.name}</span>
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-gray-600">{p.categories?.name ?? '—'}</td>
+                <td className="px-6 py-4 text-right">{formatKRW(Number(p.price_krw))}</td>
+                <td className="px-6 py-4 text-center">{p.stock}</td>
+                <td className="px-6 py-4 text-center">
+                  <span
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                      STATUS_COLOR[p.status] ?? 'bg-gray-100'
+                    }`}
+                  >
+                    {STATUS_LABEL[p.status] ?? p.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+            {(!products || products.length === 0) && (
+              <tr>
+                <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                  등록된 상품이 없습니다.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="mt-6 rounded-xl bg-gray-50 p-4 text-xs text-gray-600">
+        ℹ️ 상품 등록 후 관리자가 상세페이지를 작성하고 승인하면 노출됩니다. 가격·재고·문의 연락처만 수정할 수 있습니다.
+      </div>
+    </div>
+  );
+}
