@@ -23,7 +23,7 @@ export function MenuDrawer({
 }) {
   const [open, setOpen] = useState(false);
 
-  // 모바일에서 배경 스크롤 잠금
+  // 배경 스크롤 잠금
   useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden";
@@ -35,7 +35,6 @@ export function MenuDrawer({
     };
   }, [open]);
 
-  // 로그인 상태에 따라 메뉴 항목 결정
   const menuLinks = isLoggedIn
     ? [
         { href: "/account/orders", label: "내 주문" },
@@ -55,18 +54,19 @@ export function MenuDrawer({
         <Menu className="h-5 w-5" />
       </button>
 
-      {/* Overlay (배경 어둡게 + 외부 클릭 시 닫힘) */}
+      {/* 오버레이 */}
       {open && (
         <div
           onClick={() => setOpen(false)}
-          className="fixed inset-0 z-[200] bg-black/40 transition-opacity"
+          className="fixed inset-0 z-[200] bg-black/40"
           aria-hidden="true"
         />
       )}
 
-      {/* Drawer */}
+      {/* 드로어 — 모바일: 전체 화면, 데스크탑: 우측 440px */}
       <aside
-        className={`fixed top-0 right-0 bottom-0 z-[201] w-full sm:w-[380px] sm:max-w-[90vw]
+        className={`fixed top-0 right-0 bottom-0 z-[201]
+          w-full md:w-[440px]
           bg-background shadow-2xl flex flex-col
           transition-transform duration-300 ease-out
           ${open ? "translate-x-0" : "translate-x-full"}`}
@@ -78,17 +78,17 @@ export function MenuDrawer({
           <button
             onClick={() => setOpen(false)}
             aria-label="닫기"
-            className="p-1 -mr-1 hover:opacity-70 transition"
+            className="p-2 -mr-2 hover:opacity-70 transition"
           >
             <X className="h-6 w-6 text-muted-foreground" />
           </button>
         </div>
 
-        {/* 스크롤 영역 */}
+        {/* 본문 (스크롤 영역) */}
         <div className="flex-1 overflow-y-auto px-5 py-5">
           {/* 카테고리 */}
           <p className="text-[13px] font-semibold text-muted-foreground mb-3">카테고리</p>
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-2 gap-2.5 mb-7">
             {CATEGORIES.map((c) => {
               const Icon = c.icon;
               return (
@@ -108,8 +108,8 @@ export function MenuDrawer({
           {/* 메뉴 (로그인 시) */}
           {isLoggedIn && menuLinks.length > 0 && (
             <>
-              <p className="text-[13px] font-semibold text-muted-foreground mb-3 mt-7">메뉴</p>
-              <div>
+              <p className="text-[13px] font-semibold text-muted-foreground mb-3">메뉴</p>
+              <div className="mb-2">
                 {menuLinks.map((m) => (
                   <Link
                     key={m.href}
@@ -126,8 +126,8 @@ export function MenuDrawer({
           )}
         </div>
 
-        {/* 하단 고정: 로그인/로그아웃 버튼 */}
-        <div className="flex-shrink-0 px-5 py-4 border-t border-border bg-background">
+        {/* 하단 고정 버튼 — 항상 보임 */}
+        <div className="flex-shrink-0 px-5 py-4 border-t border-border bg-background pb-[max(1rem,env(safe-area-inset-bottom))]">
           {isLoggedIn ? (
             <form action={signOut}>
               <button
