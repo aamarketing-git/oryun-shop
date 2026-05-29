@@ -6,10 +6,10 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
 const CATEGORIES = [
-  { href: "/products?category=digital", label: "디지털" },
-  { href: "/products?category=staking", label: "스테이킹" },
-  { href: "/products?category=lifestyle", label: "라이프" },
-  { href: "/products?category=accessories", label: "액세서리" },
+  { href: "/products?category=health", label: "건강(식품)" },
+  { href: "/products?category=cosmetics", label: "화장품" },
+  { href: "/products?category=living", label: "생활용품" },
+  { href: "/products?category=etc", label: "기타" },
 ];
 
 export function MenuDrawer({
