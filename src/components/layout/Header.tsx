@@ -39,7 +39,7 @@ export async function Header() {
             <Link href="/account/orders" aria-label="주문" className="opacity-80 hover:opacity-100 transition">
               <ShoppingBag className="h-5 w-5" />
             </Link>
-            <MenuDrawer isLoggedIn={!!user} accountHref={accountHref} />
+            <MenuDrawer isLoggedIn={!!user} accountHref={accountHref} userRole={role} />
           </div>
         </div>
       </nav>
