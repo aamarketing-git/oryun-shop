@@ -26,7 +26,7 @@ export async function saveProductDetail({
   if (existingId) {
     const { error } = await admin
       .from('product_details')
-      .update({ sections, updated_by: user.id })
+      .update({ sections })
       .eq('id', existingId);
     if (error) return { error: error.message };
   } else {
