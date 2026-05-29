@@ -110,10 +110,10 @@ export async function createSellerProduct(input: {
     .insert({
       seller_id: seller.id,
       name: input.name,
-      description: input.description,
+      short_description: input.description,
       price_krw: input.priceKrw,
       stock: input.stock,
-      image_url: input.imageUrl,
+      main_image_url: input.imageUrl,
       category_id: input.categoryId || null,
       inquiry_number: input.inquiryNumber || null,
       use_direct_delivery: input.useDirectDelivery ?? false,
