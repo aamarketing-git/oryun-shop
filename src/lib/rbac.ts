@@ -5,11 +5,15 @@ export type Role = "admin" | "seller" | "customer";
 
 /**
  * 인증된 사용자 + role 반환. 미인증 시 로그인 페이지로 리다이렉트.
+ * @param redirectTo  로그인 후 돌아갈 경로 (예: "/checkout?product=abc")
  */
-export async function requireAuth() {
+export async function requireAuth(redirectTo?: string) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login");
+  const loginUrl = redirectTo
+    ? `/auth/login?next=${encodeURIComponent(redirectTo)}`
+    : "/auth/login";
+  if (!user) redirect(loginUrl);
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -17,7 +21,7 @@ export async function requireAuth() {
     .eq("id", user.id)
     .single();
 
-  if (!profile) redirect("/auth/login");
+  if (!profile) redirect(loginUrl);
   return { user, profile };
 }
 

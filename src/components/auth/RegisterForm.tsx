@@ -23,7 +23,7 @@ function validateAccountNumber(raw: string): { ok: boolean; cleaned: string; msg
   return { ok: true, cleaned };
 }
 
-export function RegisterForm({ isSeller }: { isSeller: boolean }) {
+export function RegisterForm({ isSeller, nextPath }: { isSeller: boolean; nextPath?: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -92,7 +92,7 @@ export function RegisterForm({ isSeller }: { isSeller: boolean }) {
     }
 
     setLoading(false);
-    router.push(isSeller ? "/seller/pending" : "/account");
+    router.push(isSeller ? "/seller/pending" : (nextPath ?? "/"));
     router.refresh();
   }
 

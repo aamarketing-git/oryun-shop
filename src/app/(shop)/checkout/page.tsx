@@ -10,8 +10,9 @@ export default async function CheckoutPage({
 }: {
   searchParams: { product?: string };
 }) {
-  await requireAuth();
   if (!searchParams.product) redirect("/products");
+  // 로그인 안 됐으면 로그인 후 이 페이지로 돌아오게
+  await requireAuth(`/checkout?product=${searchParams.product}`);
 
   const supabase = createClient();
   const { data: product } = await supabase
