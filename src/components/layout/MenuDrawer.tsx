@@ -23,13 +23,8 @@ export function MenuDrawer({
 }) {
   const [open, setOpen] = useState(false);
 
-  // 배경 스크롤 잠금
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow = open ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
@@ -58,37 +53,54 @@ export function MenuDrawer({
       {open && (
         <div
           onClick={() => setOpen(false)}
-          className="fixed inset-0 z-[200] bg-black/40"
+          style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.4)" }}
           aria-hidden="true"
         />
       )}
 
-      {/* 드로어 — 모바일: 전체 화면, 데스크탑: 우측 440px */}
+      {/* 드로어 — inline style로 확실하게 (Tailwind 누락 방지) */}
       <aside
-        className={`fixed top-0 right-0 bottom-0 z-[201]
-          w-full md:w-[440px]
-          bg-background shadow-2xl flex flex-col
-          transition-transform duration-300 ease-out
-          ${open ? "translate-x-0" : "translate-x-full"}`}
+        style={{
+          position: "fixed",
+          top: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 201,
+          width: "min(440px, 100vw)",
+          maxWidth: "100vw",
+          background: "#fff",
+          boxShadow: "-4px 0 24px rgba(0,0,0,0.12)",
+          display: "flex",
+          flexDirection: "column",
+          transform: open ? "translateX(0)" : "translateX(100%)",
+          transition: "transform 0.3s ease-out",
+        }}
         aria-hidden={!open}
       >
         {/* 헤더 */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border flex-shrink-0">
-          <span className="text-[20px] font-bold tracking-tight">전체 메뉴</span>
-          <button
-            onClick={() => setOpen(false)}
-            aria-label="닫기"
-            className="p-2 -mr-2 hover:opacity-70 transition"
-          >
-            <X className="h-6 w-6 text-muted-foreground" />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "16px 20px",
+            borderBottom: "1px solid #E5E8EB",
+            flexShrink: 0,
+          }}
+        >
+          <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.4px", color: "#191F28" }}>
+            전체 메뉴
+          </span>
+          <button onClick={() => setOpen(false)} aria-label="닫기" style={{ padding: 8, margin: -8, background: "none", border: "none", cursor: "pointer" }}>
+            <X className="h-6 w-6" style={{ color: "#8B95A1" }} />
           </button>
         </div>
 
-        {/* 본문 (스크롤 영역) */}
-        <div className="flex-1 overflow-y-auto px-5 py-5">
+        {/* 본문 (스크롤) */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
           {/* 카테고리 */}
-          <p className="text-[13px] font-semibold text-muted-foreground mb-3">카테고리</p>
-          <div className="grid grid-cols-2 gap-2.5 mb-7">
+          <p style={{ fontSize: 13, fontWeight: 600, color: "#8B95A1", marginBottom: 12 }}>카테고리</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 28 }}>
             {CATEGORIES.map((c) => {
               const Icon = c.icon;
               return (
@@ -96,10 +108,19 @@ export function MenuDrawer({
                   key={c.href}
                   href={c.href}
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 rounded-[14px] bg-muted px-4 py-4 hover:bg-[#E5E8EB] active:scale-[0.98] transition"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    borderRadius: 14,
+                    background: "#F2F4F6",
+                    padding: "16px",
+                    textDecoration: "none",
+                    color: "#191F28",
+                  }}
                 >
-                  <Icon className="h-[22px] w-[22px] text-primary flex-shrink-0" />
-                  <span className="text-[15px] font-medium">{c.label}</span>
+                  <Icon className="h-[22px] w-[22px]" style={{ color: "#3182F6", flexShrink: 0 }} />
+                  <span style={{ fontSize: 15, fontWeight: 500 }}>{c.label}</span>
                 </Link>
               );
             })}
@@ -108,17 +129,26 @@ export function MenuDrawer({
           {/* 메뉴 (로그인 시) */}
           {isLoggedIn && menuLinks.length > 0 && (
             <>
-              <p className="text-[13px] font-semibold text-muted-foreground mb-3">메뉴</p>
-              <div className="mb-2">
+              <p style={{ fontSize: 13, fontWeight: 600, color: "#8B95A1", marginBottom: 12 }}>메뉴</p>
+              <div>
                 {menuLinks.map((m) => (
                   <Link
                     key={m.href}
                     href={m.href}
                     onClick={() => setOpen(false)}
-                    className="flex items-center justify-between py-[15px] px-1 border-b border-muted text-[16px] hover:text-primary transition"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "15px 4px",
+                      borderBottom: "1px solid #F2F4F6",
+                      fontSize: 16,
+                      textDecoration: "none",
+                      color: "#191F28",
+                    }}
                   >
                     <span>{m.label}</span>
-                    <ChevronRight className="h-4 w-4 text-border" />
+                    <ChevronRight className="h-4 w-4" style={{ color: "#D1D6DB" }} />
                   </Link>
                 ))}
               </div>
@@ -126,14 +156,36 @@ export function MenuDrawer({
           )}
         </div>
 
-        {/* 하단 고정 버튼 — 항상 보임 */}
-        <div className="flex-shrink-0 px-5 py-4 border-t border-border bg-background pb-[max(1rem,env(safe-area-inset-bottom))]">
+        {/* 하단 고정 버튼 */}
+        <div
+          style={{
+            flexShrink: 0,
+            padding: "16px 20px",
+            paddingBottom: "max(16px, env(safe-area-inset-bottom))",
+            borderTop: "1px solid #E5E8EB",
+            background: "#fff",
+          }}
+        >
           {isLoggedIn ? (
             <form action={signOut}>
               <button
                 type="submit"
                 onClick={() => setOpen(false)}
-                className="w-full inline-flex items-center justify-center gap-2 rounded-[14px] border border-border bg-muted px-6 py-3.5 text-[15px] font-semibold text-foreground hover:bg-[#E5E8EB] transition"
+                style={{
+                  width: "100%",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  borderRadius: 14,
+                  border: "1px solid #E5E8EB",
+                  background: "#F2F4F6",
+                  padding: "14px 24px",
+                  fontSize: 15,
+                  fontWeight: 600,
+                  color: "#191F28",
+                  cursor: "pointer",
+                }}
               >
                 <LogOut className="h-[18px] w-[18px]" />
                 로그아웃
@@ -143,7 +195,19 @@ export function MenuDrawer({
             <Link
               href="/auth/login"
               onClick={() => setOpen(false)}
-              className="w-full inline-flex items-center justify-center rounded-[14px] bg-primary px-6 py-3.5 text-[15px] font-semibold text-white hover:bg-[#1B64DA] transition"
+              style={{
+                width: "100%",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 14,
+                background: "#3182F6",
+                padding: "14px 24px",
+                fontSize: 15,
+                fontWeight: 600,
+                color: "#fff",
+                textDecoration: "none",
+              }}
             >
               로그인 / 회원가입
             </Link>
