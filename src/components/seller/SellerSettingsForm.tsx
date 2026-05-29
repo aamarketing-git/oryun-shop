@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateSellerProfile } from "@/app/actions/seller-profile";
+import { formatPhoneKR, isValidPhoneKR } from "@/lib/utils";
 
 const BANKS = [
   "국민은행", "신한은행", "우리은행", "하나은행", "농협은행", "기업은행",
@@ -22,18 +23,26 @@ type Seller = {
   bank_account_holder: string | null;
   usdt_wallet_trc20: string | null;
   usdt_wallet_erc20: string | null;
+  usdt_wallet_bsc: string | null;
 };
 
 export function SellerSettingsForm({ seller }: { seller: Seller }) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+  const [phone, setPhone] = useState(formatPhoneKR(seller.contact_phone ?? ""));
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setMessage(null);
-    setSaving(true);
 
+    // 전화번호 검증
+    if (phone && !isValidPhoneKR(phone)) {
+      setMessage({ type: "err", text: "연락처 형식이 올바르지 않습니다 (예: 010-1234-5678)" });
+      return;
+    }
+
+    setSaving(true);
     const fd = new FormData(e.currentTarget);
 
     // 계좌번호 형식 검증
@@ -48,7 +57,7 @@ export function SellerSettingsForm({ seller }: { seller: Seller }) {
     const result = await updateSellerProfile({
       business_name: (fd.get("business_name") as string)?.trim(),
       representative_name: (fd.get("representative_name") as string)?.trim(),
-      contact_phone: (fd.get("contact_phone") as string)?.trim(),
+      contact_phone: phone,
       contact_kakao: ((fd.get("contact_kakao") as string)?.trim()) || null,
       contact_telegram: ((fd.get("contact_telegram") as string)?.trim()) || null,
       bank_name: (fd.get("bank_name") as string)?.trim() || null,
@@ -56,6 +65,7 @@ export function SellerSettingsForm({ seller }: { seller: Seller }) {
       bank_account_holder: ((fd.get("bank_account_holder") as string)?.trim()) || null,
       usdt_wallet_trc20: ((fd.get("usdt_wallet_trc20") as string)?.trim()) || null,
       usdt_wallet_erc20: ((fd.get("usdt_wallet_erc20") as string)?.trim()) || null,
+      usdt_wallet_bsc:   ((fd.get("usdt_wallet_bsc")   as string)?.trim()) || null,
     });
 
     setSaving(false);
@@ -76,7 +86,20 @@ export function SellerSettingsForm({ seller }: { seller: Seller }) {
         <div className="space-y-4">
           <Field name="business_name" label="상호명" defaultValue={seller.business_name ?? ""} required />
           <Field name="representative_name" label="대표자명" defaultValue={seller.representative_name ?? ""} required />
-          <Field name="contact_phone" label="연락처" defaultValue={seller.contact_phone ?? ""} required />
+
+          {/* 전화번호 자동 포맷 */}
+          <div>
+            <Label>연락처 <span className="text-red-500">*</span></Label>
+            <input
+              value={phone}
+              onChange={(e) => setPhone(formatPhoneKR(e.target.value))}
+              placeholder="010-1234-5678"
+              inputMode="numeric"
+              maxLength={13}
+              required
+              className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
         </div>
       </section>
 
@@ -92,9 +115,7 @@ export function SellerSettingsForm({ seller }: { seller: Seller }) {
               className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             >
               <option value="">은행을 선택하세요</option>
-              {BANKS.map((b) => (
-                <option key={b} value={b}>{b}</option>
-              ))}
+              {BANKS.map((b) => <option key={b} value={b}>{b}</option>)}
             </select>
           </div>
           <Field
@@ -106,53 +127,34 @@ export function SellerSettingsForm({ seller }: { seller: Seller }) {
             hint="숫자와 하이픈(-)만 입력하세요."
           />
           <Field name="bank_account_holder" label="예금주" defaultValue={seller.bank_account_holder ?? ""} />
-          <Field
-            name="usdt_wallet_trc20"
-            label="USDT 지갑 (TRC20)"
-            defaultValue={seller.usdt_wallet_trc20 ?? ""}
-            placeholder="T로 시작하는 주소"
-            mono
-          />
-          <Field
-            name="usdt_wallet_erc20"
-            label="USDT 지갑 (ERC20)"
-            defaultValue={seller.usdt_wallet_erc20 ?? ""}
-            placeholder="0x로 시작하는 주소"
-            mono
-          />
+
+          <hr className="my-2" />
+          <p className="text-sm font-medium text-gray-700">USDT 지갑 주소 (각 체인별)</p>
+
+          <Field name="usdt_wallet_trc20" label="USDT (TRC20)" defaultValue={seller.usdt_wallet_trc20 ?? ""} placeholder="T로 시작" mono />
+          <Field name="usdt_wallet_erc20" label="USDT (ERC20)" defaultValue={seller.usdt_wallet_erc20 ?? ""} placeholder="0x로 시작 (Ethereum)" mono />
+          <Field name="usdt_wallet_bsc"   label="USDT (BSC / BEP-20)" defaultValue={seller.usdt_wallet_bsc ?? ""} placeholder="0x로 시작 (BNB Smart Chain)" mono />
         </div>
       </section>
 
-      {/* 문의 연락처 */}
+      {/* 문의 채널 */}
       <section className="rounded-2xl border border-gray-200 bg-white p-6">
         <h2 className="font-semibold mb-4">고객 문의 채널</h2>
         <p className="text-xs text-gray-500 mb-4">
           상품 상세 페이지에 표시되어 고객이 직접 문의할 수 있습니다.
         </p>
         <div className="space-y-4">
-          <Field
-            name="contact_kakao"
-            label="카카오톡 오픈채팅 / ID"
-            defaultValue={seller.contact_kakao ?? ""}
-            placeholder="예: https://open.kakao.com/o/..."
-          />
-          <Field
-            name="contact_telegram"
-            label="텔레그램"
-            defaultValue={seller.contact_telegram ?? ""}
-            placeholder="예: @username"
-          />
+          <Field name="contact_kakao" label="카카오톡 오픈채팅 / ID" defaultValue={seller.contact_kakao ?? ""} placeholder="예: https://open.kakao.com/o/..." />
+          <Field name="contact_telegram" label="텔레그램" defaultValue={seller.contact_telegram ?? ""} placeholder="예: @username" />
         </div>
       </section>
 
       {message && (
-        <div
-          className={`rounded-lg p-3 text-sm ${
-            message.type === "ok"
-              ? "bg-green-50 text-green-700 border border-green-200"
-              : "bg-red-50 text-red-700 border border-red-200"
-          }`}
-        >
+        <div className={`rounded-lg p-3 text-sm ${
+          message.type === "ok"
+            ? "bg-green-50 text-green-700 border border-green-200"
+            : "bg-red-50 text-red-700 border border-red-200"
+        }`}>
           {message.text}
         </div>
       )}
@@ -181,9 +183,7 @@ function Field({
 }) {
   return (
     <div>
-      <Label>
-        {label} {required && <span className="text-red-500">*</span>}
-      </Label>
+      <Label>{label} {required && <span className="text-red-500">*</span>}</Label>
       <input
         name={name}
         defaultValue={defaultValue}

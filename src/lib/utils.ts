@@ -34,3 +34,36 @@ export function isValidTxHash(hash: string, chain: "TRC20" | "ERC20" = "TRC20"):
 export function normalizePhone(phone: string): string {
   return phone.replace(/[^0-9]/g, "");
 }
+
+/**
+ * 전화번호 자동 포맷 (한국 형식)
+ * "01012345678" → "010-1234-5678"
+ * "0212345678"  → "02-1234-5678"
+ * "021234567"   → "02-123-4567"
+ */
+export function formatPhoneKR(raw: string): string {
+  const digits = raw.replace(/\D/g, "").slice(0, 11);
+  if (!digits) return "";
+
+  // 서울 02 (2자리 지역번호)
+  if (digits.startsWith("02")) {
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 5) return `${digits.slice(0, 2)}-${digits.slice(2)}`;
+    if (digits.length <= 9) return `${digits.slice(0, 2)}-${digits.slice(2, 5)}-${digits.slice(5)}`;
+    return `${digits.slice(0, 2)}-${digits.slice(2, 6)}-${digits.slice(6, 10)}`;
+  }
+  // 휴대폰/3자리 지역번호 (010, 02 제외)
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 7) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  if (digits.length === 10) return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+}
+
+/**
+ * 한국 전화번호 형식 검증 (자릿수만)
+ * 09 이상이면서 9~11자리 숫자
+ */
+export function isValidPhoneKR(raw: string): boolean {
+  const digits = raw.replace(/\D/g, "");
+  return digits.length >= 9 && digits.length <= 11 && /^0\d+$/.test(digits);
+}

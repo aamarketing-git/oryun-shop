@@ -4,29 +4,41 @@ import { useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { formatKRW, formatUSDT } from '@/lib/utils';
 
+type Chain = 'TRC20' | 'ERC20' | 'BSC';
+
 export default function UsdtPaymentBox({
   amountUsdt,
   usdtRate,
   amountKrw,
   receiveAddressTrc20,
   receiveAddressErc20,
+  receiveAddressBsc,
 }: {
   amountUsdt: number;
   usdtRate: number;
   amountKrw: number;
   receiveAddressTrc20: string;
   receiveAddressErc20: string;
+  receiveAddressBsc?: string;
 }) {
-  const [chain, setChain] = useState<'TRC20' | 'ERC20'>('TRC20');
+  const [chain, setChain] = useState<Chain>('TRC20');
   const [copied, setCopied] = useState(false);
 
-  const address = chain === 'TRC20' ? receiveAddressTrc20 : receiveAddressErc20;
+  const address =
+    chain === 'TRC20' ? receiveAddressTrc20
+    : chain === 'ERC20' ? receiveAddressErc20
+    : (receiveAddressBsc ?? '');
 
   const copy = async () => {
+    if (!address) return;
     await navigator.clipboard.writeText(address);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
+
+  // 사용 가능한 체인만 표시
+  const availableChains: Chain[] = ['TRC20', 'ERC20'];
+  if (receiveAddressBsc) availableChains.push('BSC');
 
   return (
     <div className="mt-6 grid gap-8 md:grid-cols-2">
@@ -37,8 +49,8 @@ export default function UsdtPaymentBox({
           {formatKRW(amountKrw)} · 1 USDT = {formatKRW(usdtRate)}
         </p>
 
-        <div className="mt-6 flex gap-2">
-          {(['TRC20', 'ERC20'] as const).map((c) => (
+        <div className="mt-6 flex flex-wrap gap-2">
+          {availableChains.map((c) => (
             <button
               key={c}
               onClick={() => setChain(c)}
@@ -55,13 +67,19 @@ export default function UsdtPaymentBox({
 
         <div className="mt-4 rounded-xl bg-gray-50 p-4">
           <p className="text-xs uppercase tracking-wider text-gray-500">송금 주소 ({chain})</p>
-          <p className="mt-2 break-all font-mono text-sm">{address || '주소 미설정'}</p>
           <button
+            type="button"
             onClick={copy}
             disabled={!address}
-            className="mt-3 rounded-full bg-white border border-gray-300 px-4 py-1.5 text-xs font-medium hover:border-black disabled:opacity-50"
+            className="mt-2 w-full text-left break-all font-mono text-sm rounded-lg p-3 bg-white border border-gray-200 hover:border-[#3182F6] hover:bg-blue-50 transition disabled:opacity-50"
+            title={address ? "클릭하면 복사됩니다" : "주소 미설정"}
           >
-            {copied ? '복사됨' : '주소 복사'}
+            {address || '주소 미설정'}
+            {address && (
+              <span className="ml-2 text-xs text-gray-500 font-sans">
+                {copied ? '✓ 복사됨' : '📋 클릭하여 복사'}
+              </span>
+            )}
           </button>
         </div>
 

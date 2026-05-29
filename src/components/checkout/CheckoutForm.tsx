@@ -3,7 +3,8 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createOrder } from "@/app/actions/orders";
-import { formatKRW, formatUSDT } from "@/lib/utils";
+import { formatKRW, formatUSDT, formatPhoneKR } from "@/lib/utils";
+import { CopyText } from "@/components/ui/CopyText";
 
 type PaymentMethod = "bank_transfer" | "usdt";
 
@@ -20,6 +21,7 @@ export function CheckoutForm({ productId, priceKrw, totalUsdt, usdtRate, sellerB
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [payment, setPayment] = useState<PaymentMethod>("bank_transfer");
+  const [phone, setPhone] = useState("");
 
   const handleSubmit = (formData: FormData) => {
     setError(null);
@@ -35,6 +37,9 @@ export function CheckoutForm({ productId, priceKrw, totalUsdt, usdtRate, sellerB
       router.push(`/account/orders/${res.orderId}`);
     });
   };
+
+  // 계좌번호에서 숫자만 추출 (복사용)
+  const cleanAccount = sellerBank.account.replace(/\D/g, "");
 
   return (
     <form action={handleSubmit} className="space-y-8">
@@ -61,7 +66,16 @@ export function CheckoutForm({ productId, priceKrw, totalUsdt, usdtRate, sellerB
         <h2 className="text-sm font-medium mb-4">배송지</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input name="recipient" required placeholder="수령인" className="form-input" />
-          <input name="phone" required placeholder="연락처" className="form-input" />
+          <input
+            name="phone"
+            required
+            placeholder="연락처 (예: 010-1234-5678)"
+            value={phone}
+            onChange={(e) => setPhone(formatPhoneKR(e.target.value))}
+            inputMode="numeric"
+            maxLength={13}
+            className="form-input"
+          />
           <input name="postal_code" placeholder="우편번호" className="form-input" />
           <input name="address" required placeholder="기본 주소" className="form-input md:col-span-1" />
           <input name="address_detail" placeholder="상세 주소" className="form-input md:col-span-2" />
@@ -88,30 +102,61 @@ export function CheckoutForm({ productId, priceKrw, totalUsdt, usdtRate, sellerB
 
         {/* 안내 박스 */}
         {payment === "bank_transfer" && (
-          <div className="mt-6 p-4 bg-muted rounded-lg text-sm">
-            <p className="font-medium mb-2">공급자 입금 계좌</p>
-            <p className="text-muted-foreground">
-              {sellerBank.name} / {sellerBank.account}
-              <br />
-              예금주: {sellerBank.holder}
-            </p>
-            <p className="mt-3 text-xs text-muted-foreground">
-              주문 완료 후 24시간 이내에 위 계좌로 <strong>{formatKRW(priceKrw)}</strong>을 입금해주세요.
-              공급자가 입금 확인 후 배송이 시작됩니다.
+          <div className="mt-6 p-5 bg-muted rounded-xl text-sm space-y-4">
+            <p className="font-semibold text-base">공급자 입금 계좌</p>
+
+            <div className="space-y-3 bg-white rounded-xl p-4 border border-gray-200">
+              <Row label="은행">
+                <span className="font-medium">{sellerBank.name || "—"}</span>
+              </Row>
+              <Row label="예금주">
+                <span className="font-medium">{sellerBank.holder || "—"}</span>
+              </Row>
+              <Row label="계좌번호">
+                {cleanAccount ? (
+                  <CopyText
+                    value={cleanAccount}
+                    display={sellerBank.account}
+                    mono
+                    label="계좌번호"
+                  />
+                ) : (
+                  <span className="text-gray-400">—</span>
+                )}
+              </Row>
+              <Row label="입금 금액">
+                <CopyText
+                  value={String(priceKrw)}
+                  display={formatKRW(priceKrw)}
+                  label="입금 금액"
+                />
+              </Row>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              💡 계좌번호와 금액을 <strong>클릭하면 바로 복사</strong>됩니다.
+              주문 완료 후 24시간 이내에 입금해주세요. 공급자가 입금 확인 후 배송이 시작됩니다.
             </p>
           </div>
         )}
 
         {payment === "usdt" && (
-          <div className="mt-6 p-4 bg-muted rounded-lg text-sm">
-            <p className="font-medium mb-2">USDT 결제 안내</p>
-            <p className="text-muted-foreground">
-              결제 금액: <strong>{formatUSDT(totalUsdt)}</strong>
-              <br />
-              환율: 1 USDT = {formatKRW(usdtRate)}
-            </p>
-            <p className="mt-3 text-xs text-muted-foreground">
-              주문 완료 후 송금 주소와 QR이 표시됩니다. 송금 후 TXID를 입력하면 결제가 검증됩니다.
+          <div className="mt-6 p-5 bg-muted rounded-xl text-sm space-y-3">
+            <p className="font-semibold text-base">USDT 결제 안내</p>
+            <div className="bg-white rounded-xl p-4 border border-gray-200 space-y-2">
+              <Row label="결제 금액">
+                <CopyText
+                  value={totalUsdt.toFixed(2)}
+                  display={formatUSDT(totalUsdt)}
+                  label="USDT 금액"
+                />
+              </Row>
+              <Row label="환율">
+                <span>1 USDT = {formatKRW(usdtRate)}</span>
+              </Row>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              주문 완료 후 송금 주소(TRC20/ERC20/BSC)와 QR이 표시됩니다. 송금 후 TXID를 입력하면 결제가 검증됩니다.
             </p>
           </div>
         )}
@@ -143,6 +188,15 @@ export function CheckoutForm({ productId, priceKrw, totalUsdt, usdtRate, sellerB
         }
       `}</style>
     </form>
+  );
+}
+
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-gray-500 text-sm">{label}</span>
+      <div className="text-right">{children}</div>
+    </div>
   );
 }
 

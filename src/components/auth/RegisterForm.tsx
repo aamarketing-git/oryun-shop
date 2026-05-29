@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { formatPhoneKR, isValidPhoneKR } from "@/lib/utils";
 
-// 국내 주요 은행 목록
 const BANKS = [
   "국민은행", "신한은행", "우리은행", "하나은행", "농협은행", "기업은행",
   "SC제일은행", "씨티은행", "케이뱅크", "카카오뱅크", "토스뱅크",
@@ -12,7 +12,6 @@ const BANKS = [
   "광주은행", "전북은행", "경남은행", "제주은행", "산업은행",
 ];
 
-// 계좌번호 형식 검증: 숫자/하이픈만, 숫자 10~16자리
 function validateAccountNumber(raw: string): { ok: boolean; cleaned: string; msg?: string } {
   const cleaned = raw.replace(/[\s-]/g, "");
   if (!/^\d+$/.test(cleaned)) {
@@ -28,17 +27,24 @@ export function RegisterForm({ isSeller }: { isSeller: boolean }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [phone, setPhone] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+
+    // 전화번호 자릿수 검증
+    if (!isValidPhoneKR(phone)) {
+      setError("올바른 전화번호 형식을 입력해주세요 (예: 010-1234-5678)");
+      return;
+    }
 
     const fd = new FormData(e.currentTarget);
     const email = fd.get("email") as string;
     const password = fd.get("password") as string;
     const name = fd.get("name") as string;
 
-    // ── 공급자: 계좌번호 형식 검증 ──
+    // 공급자: 계좌번호 형식 검증
     let cleanedAccount = "";
     if (isSeller) {
       const rawAccount = (fd.get("bank_account_number") as string) ?? "";
@@ -63,18 +69,20 @@ export function RegisterForm({ isSeller }: { isSeller: boolean }) {
       setLoading(false); return;
     }
 
-    await supabase.from("profiles").update({ name, phone: fd.get("phone") as string }).eq("id", signUp.user.id);
+    await supabase.from("profiles").update({ name, phone }).eq("id", signUp.user.id);
 
     if (isSeller) {
       const { error: sellerErr } = await supabase.from("sellers").insert({
         user_id: signUp.user.id,
         business_name: fd.get("business_name") as string,
         representative_name: name,
-        contact_phone: fd.get("phone") as string,
+        contact_phone: phone,
         bank_name: fd.get("bank_name") as string,
         bank_account_number: cleanedAccount,
         bank_account_holder: fd.get("bank_account_holder") as string,
-        usdt_wallet_trc20: (fd.get("usdt_wallet") as string) || null,
+        usdt_wallet_trc20: ((fd.get("usdt_wallet_trc20") as string) ?? "").trim() || null,
+        usdt_wallet_erc20: ((fd.get("usdt_wallet_erc20") as string) ?? "").trim() || null,
+        usdt_wallet_bsc:   ((fd.get("usdt_wallet_bsc")   as string) ?? "").trim() || null,
         status: "pending",
       });
       if (sellerErr) {
@@ -93,7 +101,23 @@ export function RegisterForm({ isSeller }: { isSeller: boolean }) {
       <Field name="email" type="email" label="이메일" required />
       <Field name="password" type="password" label="비밀번호" required minLength={8} />
       <Field name="name" label={isSeller ? "대표자 이름" : "이름"} required />
-      <Field name="phone" label="연락처" required />
+
+      {/* 전화번호: 자동 포맷 */}
+      <div>
+        <label className="block text-sm font-medium mb-1">
+          연락처 <span className="text-destructive">*</span>
+        </label>
+        <input
+          name="phone_display"
+          value={phone}
+          onChange={(e) => setPhone(formatPhoneKR(e.target.value))}
+          placeholder="010-1234-5678"
+          inputMode="numeric"
+          maxLength={13}
+          required
+          className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-sm focus:border-applebrand focus:ring-1 focus:ring-applebrand"
+        />
+      </div>
 
       {isSeller && (
         <>
@@ -101,7 +125,7 @@ export function RegisterForm({ isSeller }: { isSeller: boolean }) {
           <h3 className="text-sm font-medium">공급자 정보</h3>
           <Field name="business_name" label="상호명" required />
 
-          {/* 은행 선택 (드롭다운) */}
+          {/* 은행 드롭다운 */}
           <div>
             <label className="block text-sm font-medium mb-1">
               은행명 <span className="text-destructive">*</span>
@@ -112,9 +136,7 @@ export function RegisterForm({ isSeller }: { isSeller: boolean }) {
               className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-sm focus:border-applebrand focus:ring-1 focus:ring-applebrand"
             >
               <option value="">은행을 선택하세요</option>
-              {BANKS.map((b) => (
-                <option key={b} value={b}>{b}</option>
-              ))}
+              {BANKS.map((b) => <option key={b} value={b}>{b}</option>)}
             </select>
           </div>
 
@@ -127,8 +149,12 @@ export function RegisterForm({ isSeller }: { isSeller: boolean }) {
             hint="숫자와 하이픈(-)만 입력하세요. 입금 확인은 공급자가 직접 진행합니다."
           />
           <Field name="bank_account_holder" label="예금주" required />
-          <Field name="usdt_wallet" label="USDT 지갑 주소 (TRC20)" placeholder="T로 시작하는 주소" />
-          {/* 사업자등록증 업로드는 Storage 통해 별도 처리 */}
+
+          <hr className="my-4 border-border" />
+          <p className="text-sm font-medium">USDT 지갑 주소 (선택 — 각 체인별 입력)</p>
+          <Field name="usdt_wallet_trc20" label="USDT (TRC20)" placeholder="T로 시작" mono />
+          <Field name="usdt_wallet_erc20" label="USDT (ERC20)" placeholder="0x로 시작 (Ethereum)" mono />
+          <Field name="usdt_wallet_bsc"   label="USDT (BSC / BEP-20)" placeholder="0x로 시작 (BNB Smart Chain)" mono />
         </>
       )}
 
@@ -141,11 +167,11 @@ export function RegisterForm({ isSeller }: { isSeller: boolean }) {
 }
 
 function Field({
-  name, label, type = "text", required, minLength, placeholder, inputMode, hint,
+  name, label, type = "text", required, minLength, placeholder, inputMode, hint, mono,
 }: {
   name: string; label: string; type?: string; required?: boolean;
   minLength?: number; placeholder?: string;
-  inputMode?: "numeric" | "text" | "tel" | "email"; hint?: string;
+  inputMode?: "numeric" | "text" | "tel" | "email"; hint?: string; mono?: boolean;
 }) {
   return (
     <div>
@@ -159,7 +185,7 @@ function Field({
         minLength={minLength}
         placeholder={placeholder}
         inputMode={inputMode}
-        className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-sm focus:border-applebrand focus:ring-1 focus:ring-applebrand"
+        className={`w-full px-4 py-2.5 rounded-lg border border-input bg-background text-sm focus:border-applebrand focus:ring-1 focus:ring-applebrand ${mono ? "font-mono" : ""}`}
       />
       {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
     </div>

@@ -14,6 +14,7 @@ type SellerUpdate = {
   bank_account_holder?: string | null;
   usdt_wallet_trc20?: string | null;
   usdt_wallet_erc20?: string | null;
+  usdt_wallet_bsc?: string | null;
 };
 
 export async function updateSellerProfile(input: SellerUpdate): Promise<{ ok?: true; error?: string }> {

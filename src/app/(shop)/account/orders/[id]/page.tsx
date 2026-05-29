@@ -80,6 +80,7 @@ export default async function OrderDetailPage({ params }: { params: { id: string
                     amountKrw={Number(order.total_krw)}
                     receiveAddressTrc20={process.env.USDT_RECEIVE_ADDRESS_TRC20 || ''}
                     receiveAddressErc20={process.env.USDT_RECEIVE_ADDRESS_ERC20 || ''}
+                    receiveAddressBsc={process.env.USDT_RECEIVE_ADDRESS_BSC || ''}
                   />
                   <div className="mt-8 border-t border-gray-100 pt-8">
                     <h3 className="font-semibold">TXID 제출</h3>
