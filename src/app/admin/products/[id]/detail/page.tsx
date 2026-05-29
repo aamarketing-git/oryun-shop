@@ -34,6 +34,7 @@ export default async function AdminProductDetailEditPage({
       <div className="mt-8">
         <ProductDetailEditor
           productId={product.id}
+          productStatus={product.status}
           existingId={detail?.id}
           initialSections={detail?.sections ?? []}
         />

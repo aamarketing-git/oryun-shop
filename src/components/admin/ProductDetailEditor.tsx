@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { saveProductDetail } from '@/app/actions/products';
+import { useRouter } from 'next/navigation';
+import { saveProductDetail, approveProduct } from '@/app/actions/products';
 
 type Section =
   | { type: 'hero'; title: string; subtitle?: string; image_url?: string }
@@ -35,13 +36,16 @@ function emptySection(type: Section['type']): Section {
 
 export default function ProductDetailEditor({
   productId,
+  productStatus,
   existingId,
   initialSections,
 }: {
   productId: string;
+  productStatus?: string;
   existingId?: string;
   initialSections: Section[];
 }) {
+  const router = useRouter();
   const [sections, setSections] = useState<Section[]>(initialSections.length ? initialSections : []);
   const [saving, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
@@ -74,6 +78,38 @@ export default function ProductDetailEditor({
       const res = await saveProductDetail({ productId, existingId, sections });
       if (res?.error) setMessage('오류: ' + res.error);
       else setMessage('저장되었습니다.');
+    });
+  };
+
+  // 저장 후 곧바로 승인까지 한 번에
+  const saveAndApprove = () => {
+    if (sections.length === 0) {
+      setMessage('상세페이지에 섹션을 1개 이상 추가해주세요.');
+      return;
+    }
+    if (!confirm('상세페이지를 저장하고 상품을 승인하시겠습니까?\n승인 후 즉시 사이트에 노출됩니다.')) {
+      return;
+    }
+    setMessage(null);
+    startTransition(async () => {
+      // 1) 상세페이지 저장
+      const saveRes = await saveProductDetail({ productId, existingId, sections });
+      if (saveRes?.error) {
+        setMessage('저장 오류: ' + saveRes.error);
+        return;
+      }
+      // 2) 승인
+      const approveRes = await approveProduct(productId);
+      if (approveRes?.error) {
+        setMessage('승인 오류: ' + approveRes.error + ' (상세페이지는 저장되었습니다.)');
+        return;
+      }
+      setMessage('✓ 저장 및 승인 완료 — 상품관리로 이동합니다.');
+      // 3) 상품관리 페이지로 이동
+      setTimeout(() => {
+        router.push('/admin/products?status=approved');
+        router.refresh();
+      }, 800);
     });
   };
 
@@ -113,11 +149,39 @@ export default function ProductDetailEditor({
         ))}
 
         {sections.length > 0 && (
-          <div className="flex items-center gap-4">
-            <button onClick={save} disabled={saving} className="btn-apple">
-              {saving ? '저장 중…' : '상세페이지 저장'}
-            </button>
-            {message && <span className="text-sm text-gray-600">{message}</span>}
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={save}
+                disabled={saving}
+                className="rounded-[14px] border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 hover:bg-gray-50 disabled:opacity-50 transition"
+              >
+                {saving ? '저장 중…' : '상세페이지만 저장'}
+              </button>
+
+              {/* 저장 후 승인: 승인 대기 상태일 때만 표시 */}
+              {productStatus === 'pending' && (
+                <button
+                  onClick={saveAndApprove}
+                  disabled={saving}
+                  className="rounded-[14px] bg-[#3182F6] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#1B64DA] disabled:opacity-50 transition"
+                >
+                  {saving ? '처리 중…' : '✓ 저장 후 승인'}
+                </button>
+              )}
+
+              {/* 이미 승인된 상품은 안내 */}
+              {productStatus === 'approved' && (
+                <span className="text-xs text-green-700 bg-green-50 border border-green-200 rounded-full px-3 py-1">
+                  ✓ 이미 승인됨 — 상세 수정 후 "저장"만 누르면 됩니다
+                </span>
+              )}
+            </div>
+            {message && (
+              <p className={`text-sm ${message.startsWith('✓') ? 'text-green-700' : message.startsWith('오류') || message.startsWith('저장 오류') || message.startsWith('승인 오류') ? 'text-red-600' : 'text-gray-600'}`}>
+                {message}
+              </p>
+            )}
           </div>
         )}
       </div>

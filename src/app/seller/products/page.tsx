@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { formatKRW } from '@/lib/utils';
+import { ResubmitButton } from '@/components/seller/ResubmitButton';
 
 const STATUS_LABEL: Record<string, string> = {
   draft: '작성중',
@@ -56,40 +57,63 @@ export default async function SellerProductsPage() {
               <th className="px-6 py-3 text-right">가격</th>
               <th className="px-6 py-3 text-center">재고</th>
               <th className="px-6 py-3 text-center">상태</th>
+              <th className="px-6 py-3 text-center">관리</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {products?.map((p: any) => (
-              <tr key={p.id}>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    {p.main_image_url && (
-                      <img
-                        src={p.main_image_url}
-                        alt=""
-                        className="h-10 w-10 rounded-lg bg-gray-50 object-cover"
-                      />
+            {products?.flatMap((p: any) => {
+              const rows = [
+                <tr key={p.id}>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      {p.main_image_url && (
+                        <img
+                          src={p.main_image_url}
+                          alt=""
+                          className="h-10 w-10 rounded-lg bg-gray-50 object-cover"
+                        />
+                      )}
+                      <span className="font-medium">{p.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">{p.categories?.name ?? '—'}</td>
+                  <td className="px-6 py-4 text-right">{formatKRW(Number(p.price_krw))}</td>
+                  <td className="px-6 py-4 text-center">{p.stock}</td>
+                  <td className="px-6 py-4 text-center">
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        STATUS_COLOR[p.status] ?? 'bg-gray-100'
+                      }`}
+                    >
+                      {STATUS_LABEL[p.status] ?? p.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    {p.status === 'rejected' ? (
+                      <ResubmitButton productId={p.id} />
+                    ) : (
+                      <span className="text-xs text-gray-400">—</span>
                     )}
-                    <span className="font-medium">{p.name}</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-gray-600">{p.categories?.name ?? '—'}</td>
-                <td className="px-6 py-4 text-right">{formatKRW(Number(p.price_krw))}</td>
-                <td className="px-6 py-4 text-center">{p.stock}</td>
-                <td className="px-6 py-4 text-center">
-                  <span
-                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                      STATUS_COLOR[p.status] ?? 'bg-gray-100'
-                    }`}
-                  >
-                    {STATUS_LABEL[p.status] ?? p.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                </tr>,
+              ];
+              if (p.status === 'rejected' && p.rejected_reason) {
+                rows.push(
+                  <tr key={`${p.id}-reason`} className="bg-red-50">
+                    <td colSpan={6} className="px-6 py-3">
+                      <div className="flex items-start gap-2 text-xs text-red-700">
+                        <span className="font-semibold flex-shrink-0">⚠ 거절 사유:</span>
+                        <span>{p.rejected_reason}</span>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              }
+              return rows;
+            })}
             {(!products || products.length === 0) && (
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                   등록된 상품이 없습니다.
                 </td>
               </tr>
@@ -98,8 +122,9 @@ export default async function SellerProductsPage() {
         </table>
       </div>
 
-      <div className="mt-6 rounded-xl bg-gray-50 p-4 text-xs text-gray-600">
-        ℹ️ 상품 등록 후 관리자가 상세페이지를 작성하고 승인하면 노출됩니다. 가격·재고·문의 연락처만 수정할 수 있습니다.
+      <div className="mt-6 rounded-xl bg-gray-50 p-4 text-xs text-gray-600 space-y-1">
+        <p>ℹ️ 상품 등록 후 관리자가 상세페이지를 작성하고 승인하면 노출됩니다.</p>
+        <p>거절된 상품은 정보를 수정한 후 <strong>재요청</strong> 버튼으로 다시 승인을 요청할 수 있습니다.</p>
       </div>
     </div>
   );
