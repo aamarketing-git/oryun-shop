@@ -49,7 +49,6 @@ export function MenuDrawer({
         <Menu className="h-5 w-5" />
       </button>
 
-      {/* 오버레이 */}
       {open && (
         <div
           onClick={() => setOpen(false)}
@@ -58,7 +57,6 @@ export function MenuDrawer({
         />
       )}
 
-      {/* 드로어 — inline style로 확실하게 (Tailwind 누락 방지) */}
       <aside
         style={{
           position: "fixed",
@@ -74,6 +72,7 @@ export function MenuDrawer({
           flexDirection: "column",
           transform: open ? "translateX(0)" : "translateX(100%)",
           transition: "transform 0.3s ease-out",
+          overflow: "hidden",
         }}
         aria-hidden={!open}
       >
@@ -91,16 +90,24 @@ export function MenuDrawer({
           <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.4px", color: "#191F28" }}>
             전체 메뉴
           </span>
-          <button onClick={() => setOpen(false)} aria-label="닫기" style={{ padding: 8, margin: -8, background: "none", border: "none", cursor: "pointer" }}>
+          <button
+            onClick={() => setOpen(false)}
+            aria-label="닫기"
+            style={{ padding: 8, margin: -8, background: "none", border: "none", cursor: "pointer" }}
+          >
             <X className="h-6 w-6" style={{ color: "#8B95A1" }} />
           </button>
         </div>
 
-        {/* 본문 (스크롤) */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
-          {/* 카테고리 */}
-          <p style={{ fontSize: 13, fontWeight: 600, color: "#8B95A1", marginBottom: 12 }}>카테고리</p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 28 }}>
+        {/* 본문 — 전체가 함께 스크롤되는 단일 영역 (카테고리 박스에 별도 높이 제한 없음) */}
+        <div style={{ flex: "1 1 auto", overflowY: "auto", padding: "20px", minHeight: 0 }}>
+          {/* 카테고리 제목 */}
+          <p style={{ fontSize: 13, fontWeight: 600, color: "#8B95A1", margin: "0 0 12px" }}>
+            카테고리
+          </p>
+
+          {/* 카테고리 목록 — 세로로 쫙 펼침 (한눈에 4개 다 보임) */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
             {CATEGORIES.map((c) => {
               const Icon = c.icon;
               return (
@@ -111,16 +118,16 @@ export function MenuDrawer({
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 12,
+                    gap: 14,
                     borderRadius: 14,
                     background: "#F2F4F6",
-                    padding: "16px",
+                    padding: "18px 18px",
                     textDecoration: "none",
                     color: "#191F28",
                   }}
                 >
-                  <Icon className="h-[22px] w-[22px]" style={{ color: "#3182F6", flexShrink: 0 }} />
-                  <span style={{ fontSize: 15, fontWeight: 500 }}>{c.label}</span>
+                  <Icon className="h-6 w-6" style={{ color: "#3182F6", flexShrink: 0 }} />
+                  <span style={{ fontSize: 16, fontWeight: 600 }}>{c.label}</span>
                 </Link>
               );
             })}
@@ -129,7 +136,9 @@ export function MenuDrawer({
           {/* 메뉴 (로그인 시) */}
           {isLoggedIn && menuLinks.length > 0 && (
             <>
-              <p style={{ fontSize: 13, fontWeight: 600, color: "#8B95A1", marginBottom: 12 }}>메뉴</p>
+              <p style={{ fontSize: 13, fontWeight: 600, color: "#8B95A1", margin: "0 0 12px" }}>
+                메뉴
+              </p>
               <div>
                 {menuLinks.map((m) => (
                   <Link
@@ -140,7 +149,7 @@ export function MenuDrawer({
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
-                      padding: "15px 4px",
+                      padding: "16px 4px",
                       borderBottom: "1px solid #F2F4F6",
                       fontSize: 16,
                       textDecoration: "none",
