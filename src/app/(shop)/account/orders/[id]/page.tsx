@@ -27,7 +27,7 @@ export default async function OrderDetailPage({ params }: { params: { id: string
     .from('orders')
     .select(
       `*,
-       order_items(*, products(id, name, image_url)),
+       order_items(*, products(id, name, main_image_url)),
        sellers(business_name, bank_name, bank_account, bank_holder, usdt_address_trc20, usdt_address_erc20, contact_phone, contact_kakao, contact_telegram),
        txid_records(*),
        shipments(*)`,
@@ -135,9 +135,9 @@ export default async function OrderDetailPage({ params }: { params: { id: string
             <ul className="mt-4 divide-y divide-gray-100">
               {order.order_items?.map((item: any) => (
                 <li key={item.id} className="flex items-center gap-4 py-4">
-                  {item.products?.image_url && (
+                  {item.products?.main_image_url && (
                     <img
-                      src={item.products.image_url}
+                      src={item.products.main_image_url}
                       alt={item.product_name}
                       className="h-16 w-16 rounded-lg bg-gray-50 object-cover"
                     />

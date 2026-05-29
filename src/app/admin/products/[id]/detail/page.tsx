@@ -11,7 +11,7 @@ export default async function AdminProductDetailEditPage({
 
   const { data: product } = await supabase
     .from('products')
-    .select('id, name, price_krw, image_url, status')
+    .select('id, name, price_krw, main_image_url, status')
     .eq('id', params.id)
     .maybeSingle();
 

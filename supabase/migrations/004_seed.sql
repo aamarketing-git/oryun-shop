@@ -4,10 +4,10 @@
 
 -- 기본 카테고리 (Apple Store처럼 간결하게)
 insert into categories (slug, name, sort_order) values
-  ('digital', '디지털', 1),
-  ('lifestyle', '라이프스타일', 2),
-  ('accessories', '액세서리', 3),
-  ('staking', '스테이킹', 4)
+  ('health', '건강(식품)', 1),
+  ('cosmetics', '화장품', 2),
+  ('living', '생활용품', 3),
+  ('etc', '기타', 4)
 on conflict (slug) do nothing;
 
 -- =====================================================================

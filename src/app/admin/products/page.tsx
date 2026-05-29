@@ -80,9 +80,9 @@ export default async function AdminProductsPage({
               <tr key={p.id}>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    {p.image_url && (
+                    {p.main_image_url && (
                       <img
-                        src={p.image_url}
+                        src={p.main_image_url}
                         alt=""
                         className="h-10 w-10 rounded-lg bg-gray-50 object-cover"
                       />

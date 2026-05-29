@@ -57,7 +57,7 @@ export async function rejectProduct(productId: string, reason: string) {
   const admin = createServiceClient();
   const { error } = await admin
     .from('products')
-    .update({ status: 'rejected', rejection_reason: reason })
+    .update({ status: 'rejected', rejected_reason: reason })
     .eq('id', productId);
   if (error) return { error: error.message };
   revalidatePath('/admin/products');

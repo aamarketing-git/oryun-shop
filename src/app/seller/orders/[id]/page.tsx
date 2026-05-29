@@ -19,7 +19,7 @@ export default async function SellerOrderDetailPage({ params }: { params: { id: 
     .from('orders')
     .select(
       `*,
-       order_items(*, products(name, image_url)),
+       order_items(*, products(name, main_image_url)),
        profiles!orders_customer_id_fkey(full_name, email),
        txid_records(*),
        shipments(*)`,
@@ -118,9 +118,9 @@ export default async function SellerOrderDetailPage({ params }: { params: { id: 
             <ul className="mt-3 divide-y divide-gray-100">
               {order.order_items?.map((item: any) => (
                 <li key={item.id} className="flex items-center gap-4 py-3">
-                  {item.products?.image_url && (
+                  {item.products?.main_image_url && (
                     <img
-                      src={item.products.image_url}
+                      src={item.products.main_image_url}
                       alt=""
                       className="h-12 w-12 rounded-lg bg-gray-50 object-cover"
                     />
