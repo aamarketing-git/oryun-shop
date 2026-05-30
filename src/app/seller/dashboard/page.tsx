@@ -11,7 +11,10 @@ export default async function SellerDashboardPage() {
   if (!user) redirect('/auth/login');
 
   const { data: seller } = await supabase.from('sellers').select('*').eq('user_id', user.id).single();
-  if (!seller) redirect('/');
+  // 공급자 신청 자체가 없으면 신청 페이지로
+  if (!seller) redirect('/auth/register?role=seller');
+  // 승인 안 된 상태면 대기 페이지로 (pending/rejected/blocked)
+  if (seller.status !== 'approved') redirect('/seller/pending');
 
   const [{ count: productCount }, { count: pendingOrderCount }, { data: recentOrders }] =
     await Promise.all([

@@ -65,7 +65,21 @@ export function RegisterForm({ isSeller, nextPath }: { isSeller: boolean; nextPa
     });
 
     if (signUpErr || !signUp.user) {
-      setError(signUpErr?.message ?? "회원가입에 실패했습니다.");
+      // Supabase 에러 메시지를 한국어로 변환
+      const raw = signUpErr?.message ?? "";
+      let friendly = "회원가입에 실패했습니다.";
+      if (raw.includes("already registered") || raw.includes("already been registered")) {
+        friendly = isSeller
+          ? "이미 가입된 이메일입니다. 로그인 후 공급자 신청을 진행해주세요."
+          : "이미 가입된 이메일입니다. 로그인해주세요.";
+      } else if (raw.includes("Password")) {
+        friendly = "비밀번호가 너무 짧거나 약합니다. 8자 이상으로 입력해주세요.";
+      } else if (raw.includes("Invalid email")) {
+        friendly = "올바른 이메일 형식이 아닙니다.";
+      } else if (raw) {
+        friendly = "회원가입에 실패했습니다: " + raw;
+      }
+      setError(friendly);
       setLoading(false); return;
     }
 
