@@ -5,8 +5,10 @@ const FOOTER_COLUMNS = [
     title: "쇼핑",
     links: [
       { href: "/products", label: "전체 상품" },
-      { href: "/products?category=digital", label: "디지털" },
-      { href: "/products?category=staking", label: "스테이킹" },
+      { href: "/products?category=health", label: "건강(식품)" },
+      { href: "/products?category=cosmetics", label: "화장품" },
+      { href: "/products?category=living", label: "생활용품" },
+      { href: "/products?category=etc", label: "기타" },
     ],
   },
   {
