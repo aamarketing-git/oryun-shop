@@ -3,13 +3,17 @@ import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 
+// 빈 문자열도 안전하게 처리 (?? 는 null/undefined만 처리하므로 .trim() 필요)
+const rawSiteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "").trim();
+const siteUrl = rawSiteUrl.startsWith("http") ? rawSiteUrl : "http://localhost:3000";
+
 export const metadata: Metadata = {
   title: {
     default: "오륜쇼핑몰",
     template: "%s — 오륜쇼핑몰",
   },
   description: "오륜쇼핑몰 — A new way to shop. 미니멀하고 신뢰할 수 있는 멀티벤더 마켓플레이스.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(siteUrl),
   openGraph: {
     type: "website",
     locale: "ko_KR",
