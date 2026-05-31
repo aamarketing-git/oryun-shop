@@ -69,21 +69,46 @@ export default async function SellerDashboardPage() {
             전체
           </Link>
         </div>
-        <ul className="mt-4 divide-y divide-gray-100 rounded-2xl border border-gray-200 bg-white">
-          {recentOrders?.map((o) => (
-            <li key={o.id} className="flex items-center justify-between p-5">
-              <div>
-                <Link href={`/seller/orders/${o.id}`} className="font-medium hover:underline">
-                  {o.order_number}
+        <ul className="mt-4 divide-y divide-gray-100 rounded-2xl border border-gray-200 bg-white overflow-hidden">
+          {recentOrders?.map((o) => {
+            const STATUS_LABEL: Record<string, string> = {
+              pending_payment: '결제 대기',
+              paid: '결제 완료',
+              preparing: '배송 준비',
+              shipping: '배송 중',
+              delivered: '배송 완료',
+              cancelled: '취소',
+              refunded: '환불',
+            };
+            const STATUS_COLOR: Record<string, string> = {
+              pending_payment: 'bg-amber-100 text-amber-800',
+              paid: 'bg-green-100 text-green-800',
+              preparing: 'bg-blue-100 text-blue-800',
+              shipping: 'bg-indigo-100 text-indigo-800',
+              delivered: 'bg-gray-100 text-gray-700',
+              cancelled: 'bg-red-100 text-red-700',
+            };
+            return (
+              <li key={o.id}>
+                {/* 전체 행을 링크로 → 어디든 클릭 가능 */}
+                <Link
+                  href={`/seller/orders/${o.id}`}
+                  className="flex items-center justify-between p-5 hover:bg-gray-50 transition"
+                >
+                  <div>
+                    <p className="font-medium">{o.order_number}</p>
+                    <p className="text-sm text-gray-500 mt-0.5">{formatDate(o.created_at)}</p>
+                  </div>
+                  <div className="text-right flex flex-col items-end gap-1">
+                    <p className="font-medium">{formatKRW(Number(o.total_krw))}</p>
+                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_COLOR[o.status] ?? 'bg-gray-100'}`}>
+                      {STATUS_LABEL[o.status] ?? o.status}
+                    </span>
+                  </div>
                 </Link>
-                <p className="text-sm text-gray-500">{formatDate(o.created_at)}</p>
-              </div>
-              <div className="text-right">
-                <p className="font-medium">{formatKRW(Number(o.total_krw))}</p>
-                <p className="text-xs text-gray-500">{o.status}</p>
-              </div>
-            </li>
-          ))}
+              </li>
+            );
+          })}
           {(!recentOrders || recentOrders.length === 0) && (
             <li className="p-8 text-center text-gray-500">아직 주문이 없습니다.</li>
           )}

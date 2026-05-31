@@ -9,10 +9,11 @@ export default async function AdminDashboard() {
   // 7일 통계
   const since = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
 
-  const [{ count: customerCnt }, { count: sellerPending }, { count: productPending }, { data: revenueRows }] = await Promise.all([
+  const [{ count: customerCnt }, { count: sellerPending }, { count: productPending }, { count: txidPending }, { data: revenueRows }] = await Promise.all([
     supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "customer"),
     supabase.from("sellers").select("*", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("products").select("*", { count: "exact", head: true }).eq("status", "pending"),
+    supabase.from("txid_records").select("*", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("orders").select("total_krw, total_usdt, status, created_at").gte("created_at", since).in("status", ["paid","preparing","shipping","delivered"]),
   ]);
 
@@ -39,10 +40,16 @@ export default async function AdminDashboard() {
         <div className="bg-background border border-border rounded-xl p-6">
           <h2 className="text-sm font-medium mb-4">바로가기</h2>
           <div className="space-y-2 text-sm">
-            <QuickLink href="/admin/sellers?status=pending">공급자 승인 대기 →</QuickLink>
-            <QuickLink href="/admin/products?status=pending">상품 승인 대기 →</QuickLink>
-            <QuickLink href="/admin/txids?status=pending">TXID 검증 대기 →</QuickLink>
-            <QuickLink href="/admin/settings/rate">USDT 환율 변경 →</QuickLink>
+            <QuickLink href="/admin/sellers?status=pending" count={sellerPending ?? 0}>
+              공급자 승인 대기
+            </QuickLink>
+            <QuickLink href="/admin/products?status=pending" count={productPending ?? 0}>
+              상품 승인 대기
+            </QuickLink>
+            <QuickLink href="/admin/txids?status=pending" count={txidPending ?? 0}>
+              TXID 검증 대기
+            </QuickLink>
+            <QuickLink href="/admin/settings/rate">USDT 환율 변경</QuickLink>
           </div>
         </div>
       </div>
@@ -86,6 +93,31 @@ async function RecentOrders() {
   );
 }
 
-function QuickLink({ href, children }: { href: string; children: React.ReactNode }) {
-  return <a href={href} className="block py-1 link-apple">{children}</a>;
+function QuickLink({ href, children, count }: { href: string; children: React.ReactNode; count?: number }) {
+  return (
+    <a
+      href={href}
+      className={`flex items-center justify-between py-2 px-3 rounded-lg transition ${
+        count && count > 0
+          ? "bg-[#E8F1FE] hover:bg-[#C7DCFC] text-[#1B64DA]"
+          : "hover:bg-gray-50 text-gray-700"
+      }`}
+    >
+      <span className="font-medium">{children}</span>
+      <div className="flex items-center gap-2">
+        {count !== undefined && (
+          <span
+            className={`min-w-[24px] text-center rounded-full px-2 py-0.5 text-xs font-bold ${
+              count > 0
+                ? "bg-[#3182F6] text-white"
+                : "bg-gray-100 text-gray-400"
+            }`}
+          >
+            {count}
+          </span>
+        )}
+        <span className="text-gray-400">→</span>
+      </div>
+    </a>
+  );
 }

@@ -30,7 +30,7 @@ export default async function SellerOrdersPage({
   const status = searchParams.status ?? 'all';
   let q = supabase
     .from('orders')
-    .select('*, profiles!orders_customer_id_fkey(full_name, email)')
+    .select('*, profiles!orders_customer_id_fkey(name, email)')
     .eq('seller_id', seller.id)
     .order('created_at', { ascending: false });
 
@@ -80,7 +80,7 @@ export default async function SellerOrdersPage({
                   </Link>
                 </td>
                 <td className="px-6 py-4 text-gray-600">
-                  {o.profiles?.full_name ?? o.profiles?.email ?? '—'}
+                  {o.profiles?.name ?? o.profiles?.email ?? '—'}
                 </td>
                 <td className="px-6 py-4 text-right">{formatKRW(Number(o.total_krw))}</td>
                 <td className="px-6 py-4 text-gray-600">
