@@ -15,8 +15,8 @@ export default async function AdminTxidsPage() {
       <h1 className="mt-2 text-3xl font-semibold">TXID 관리</h1>
       <p className="mt-1 text-sm text-gray-500">동일 TXID 재사용 금지가 자동으로 강제됩니다.</p>
 
-      <div className="mt-8 overflow-hidden rounded-2xl border border-gray-200 bg-white">
-        <table className="w-full text-sm">
+      <div className="mt-8 overflow-x-auto rounded-2xl border border-gray-200 bg-white">
+        <table className="w-full min-w-[640px] text-sm">
           <thead className="border-b border-gray-200 bg-gray-50 text-left text-xs uppercase tracking-wider text-gray-500">
             <tr>
               <th className="px-6 py-3">TXID</th>

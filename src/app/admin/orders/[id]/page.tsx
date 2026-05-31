@@ -56,7 +56,14 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
   const totalUsdt = Number(order.total_krw) / Number(order.usdt_rate || 1500);
   const statusInfo = STATUS_INFO[order.status] ?? STATUS_INFO.pending_payment;
   const isCancelled = order.status === 'cancelled' || order.status === 'refunded';
-  const shipping = order.shipping_address ?? {};
+  // 배송지는 orders 테이블의 개별 컬럼 (shipping_recipient, shipping_phone 등)
+  const shipping = {
+    recipient: order.shipping_recipient,
+    phone: order.shipping_phone,
+    postal_code: order.shipping_postal_code,
+    address: order.shipping_address,
+    address_detail: order.shipping_address_detail,
+  };
 
   return (
     <div className="max-w-5xl">

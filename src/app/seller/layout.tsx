@@ -27,7 +27,7 @@ export default async function SellerLayout({ children }: { children: React.React
         <div className="text-center max-w-md">
           <h1 className="text-2xl font-semibold mb-2">승인 대기 중</h1>
           <p className="text-muted-foreground">
-            공급자 신청이 관리자의 승인을 기다리고 있습니다. 승인 완료 시 이메일로 안내드립니다.
+            공급자 신청이 관리자의 승인을 기다리고 있습니다.
           </p>
         </div>
       </div>
@@ -40,7 +40,7 @@ export default async function SellerLayout({ children }: { children: React.React
         <div className="text-center max-w-md">
           <h1 className="text-2xl font-semibold mb-2">접근 제한</h1>
           <p className="text-muted-foreground">
-            공급자 활동이 제한되었습니다. 자세한 사항은 관리자에게 문의하세요.
+            공급자 활동이 제한되었습니다.
           </p>
         </div>
       </div>
@@ -49,8 +49,31 @@ export default async function SellerLayout({ children }: { children: React.React
 
   return (
     <div className="min-h-screen bg-muted">
+      {/* 모바일 — 상단 가로 스크롤 탭 */}
+      <div className="md:hidden bg-white border-b border-border sticky top-14 z-30">
+        <div className="px-3 py-2">
+          <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1.5 px-1">
+            오륜 Seller
+          </p>
+        </div>
+        <nav className="h-scroll px-3 pb-2" style={{ paddingTop: 0 }}>
+          {SELLER_NAV.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-full bg-gray-100 hover:bg-gray-200 whitespace-nowrap transition"
+              style={{ flexShrink: 0 }}
+            >
+              <item.icon className="h-3.5 w-3.5" />
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
+
+      {/* PC — 좌측 사이드바 */}
       <div className="flex">
-        <aside className="w-60 bg-background border-r border-border min-h-screen p-6 sticky top-12 self-start">
+        <aside className="hidden md:block w-60 bg-background border-r border-border min-h-screen p-6 sticky top-12 self-start">
           <div className="mb-8">
             <p className="text-xs uppercase tracking-wider text-muted-foreground">오륜 Seller</p>
             <p className="text-lg font-semibold mt-1">공급자 센터</p>
@@ -68,7 +91,7 @@ export default async function SellerLayout({ children }: { children: React.React
             ))}
           </nav>
         </aside>
-        <main className="flex-1 p-8">{children}</main>
+        <main className="flex-1 min-w-0 p-4 md:p-8 overflow-x-hidden">{children}</main>
       </div>
     </div>
   );

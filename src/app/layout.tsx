@@ -7,6 +7,13 @@ import { Footer } from "@/components/layout/Footer";
 const rawSiteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "").trim();
 const siteUrl = rawSiteUrl.startsWith("http") ? rawSiteUrl : "http://localhost:3000";
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+};
+
 export const metadata: Metadata = {
   title: {
     default: "오륜쇼핑몰",
@@ -33,9 +40,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"
         />
       </head>
-      <body className="min-h-screen flex flex-col">
+      <body className="min-h-screen flex flex-col overflow-x-hidden">
         <Header />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 w-full max-w-full overflow-x-hidden">{children}</main>
         <Footer />
       </body>
     </html>

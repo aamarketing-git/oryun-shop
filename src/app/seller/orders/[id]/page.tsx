@@ -116,7 +116,16 @@ export default async function SellerOrderDetailPage({ params }: { params: { id: 
             <section className="rounded-2xl border border-gray-200 bg-white p-6">
               <h2 className="font-semibold">배송 등록</h2>
               <div className="mt-4">
-                <ShipmentForm orderId={order.id} />
+                <ShipmentForm
+                  orderId={order.id}
+                  shipping={{
+                    recipient: order.shipping_recipient,
+                    phone: order.shipping_phone,
+                    postal_code: order.shipping_postal_code,
+                    address: order.shipping_address,
+                    address_detail: order.shipping_address_detail,
+                  }}
+                />
               </div>
             </section>
           )}

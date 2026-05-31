@@ -56,7 +56,7 @@ export default async function SellerDashboardPage() {
       <p className="section-eyebrow">Seller</p>
       <h1 className="mt-2 text-3xl font-semibold">{seller.business_name}</h1>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-3">
+      <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard label="7일 매출" value={formatKRW(weeklyRevenue)} />
         <StatCard label="등록 상품" value={String(productCount ?? 0)} />
         <StatCard label="결제 대기 주문" value={String(pendingOrderCount ?? 0)} />

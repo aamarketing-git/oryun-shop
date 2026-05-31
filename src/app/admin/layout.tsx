@@ -23,8 +23,31 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-screen bg-muted">
+      {/* 모바일 — 상단 가로 스크롤 탭 */}
+      <div className="md:hidden bg-white border-b border-border sticky top-14 z-30">
+        <div className="px-3 py-2">
+          <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1.5 px-1">
+            오륜 Admin
+          </p>
+        </div>
+        <nav className="h-scroll px-3 pb-2" style={{ paddingTop: 0 }}>
+          {ADMIN_NAV.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-full bg-gray-100 hover:bg-gray-200 whitespace-nowrap transition"
+              style={{ flexShrink: 0 }}
+            >
+              <item.icon className="h-3.5 w-3.5" />
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
+
+      {/* PC — 좌측 사이드바 */}
       <div className="flex">
-        <aside className="w-60 bg-background border-r border-border min-h-screen p-6 sticky top-12 self-start">
+        <aside className="hidden md:block w-60 bg-background border-r border-border min-h-screen p-6 sticky top-12 self-start">
           <div className="mb-8">
             <p className="text-xs uppercase tracking-wider text-muted-foreground">오륜 Admin</p>
             <p className="text-lg font-semibold mt-1">관리자 센터</p>
@@ -42,7 +65,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             ))}
           </nav>
         </aside>
-        <main className="flex-1 p-8">{children}</main>
+        <main className="flex-1 min-w-0 p-4 md:p-8 overflow-x-hidden">{children}</main>
       </div>
     </div>
   );
