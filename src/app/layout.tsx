@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { PageTransition } from "@/components/layout/PageTransition";
 
 // 빈 문자열도 안전하게 처리 (?? 는 null/undefined만 처리하므로 .trim() 필요)
 const rawSiteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "").trim();
@@ -58,7 +59,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen flex flex-col overflow-x-hidden">
         <Header />
-        <main className="flex-1 w-full max-w-full overflow-x-hidden">{children}</main>
+        <main className="flex-1 w-full max-w-full overflow-x-hidden">
+          <PageTransition>{children}</PageTransition>
+        </main>
         <Footer />
       </body>
     </html>

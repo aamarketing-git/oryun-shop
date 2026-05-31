@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { formatPhoneKR, isValidPhoneKR } from "@/lib/utils";
+import { formatPhoneKR, isValidPhoneKR, validatePassword } from "@/lib/utils";
 
 const BANKS = [
   "국민은행", "신한은행", "우리은행", "하나은행", "농협은행", "기업은행",
@@ -114,6 +114,14 @@ export function RegisterForm({ isSeller, nextPath }: { isSeller: boolean; nextPa
       const password = fd.get("password") as string;
       const name = fd.get("name") as string;
 
+      // 비밀번호 강도 검증 (영문+숫자+특수문자, 8자 이상)
+      const pwCheck = validatePassword(password);
+      if (!pwCheck.ok) {
+        setError(pwCheck.msg ?? "비밀번호가 안전하지 않습니다.");
+        setLoading(false);
+        return;
+      }
+
       const { data: signUp, error: signUpErr } = await supabase.auth.signUp({
         email, password, options: { data: { name } },
       });
@@ -222,7 +230,7 @@ export function RegisterForm({ isSeller, nextPath }: { isSeller: boolean; nextPa
       {!isExistingUserBecomingSeller && (
         <>
           <Field name="email" type="email" label="이메일" required />
-          <Field name="password" type="password" label="비밀번호" required minLength={8} />
+          <PasswordField />
           <Field name="name" label={isSeller ? "대표자 이름" : "이름"} required />
         </>
       )}
@@ -325,6 +333,72 @@ function Field({
         className={`w-full px-4 py-2.5 rounded-lg border border-input bg-background text-sm focus:border-applebrand focus:ring-1 focus:ring-applebrand ${mono ? "font-mono" : ""}`}
       />
       {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
+    </div>
+  );
+}
+
+function PasswordField() {
+  const [pw, setPw] = useState("");
+  // 실시간 강도 체크
+  const hasLen = pw.length >= 8;
+  const hasLetter = /[a-zA-Z]/.test(pw);
+  const hasDigit = /\d/.test(pw);
+  const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(pw);
+  const passCount = [hasLen, hasLetter, hasDigit, hasSpecial].filter(Boolean).length;
+
+  const strengthLabel =
+    passCount === 4 ? "안전" : passCount >= 2 ? "보통" : "약함";
+  const strengthColor =
+    passCount === 4 ? "#06A776" : passCount >= 2 ? "#F59E0B" : "#EF4444";
+
+  return (
+    <div>
+      <label className="block text-sm font-medium mb-1">
+        비밀번호 <span className="text-destructive">*</span>
+      </label>
+      <input
+        name="password"
+        type="password"
+        required
+        minLength={8}
+        value={pw}
+        onChange={(e) => setPw(e.target.value)}
+        placeholder="영문 + 숫자 + 특수문자 포함, 8자 이상"
+        className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-sm focus:border-applebrand focus:ring-1 focus:ring-applebrand"
+      />
+      {pw && (
+        <div className="mt-1.5 space-y-1">
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                style={{
+                  width: `${(passCount / 4) * 100}%`,
+                  background: strengthColor,
+                  transition: "all 0.2s",
+                }}
+                className="h-full"
+              />
+            </div>
+            <span className="text-xs font-semibold" style={{ color: strengthColor }}>
+              {strengthLabel}
+            </span>
+          </div>
+          <div className="text-xs text-gray-500 flex flex-wrap gap-x-3 gap-y-0.5">
+            <span style={{ color: hasLen ? "#06A776" : "#9ca3af" }}>
+              {hasLen ? "✓" : "○"} 8자 이상
+            </span>
+            <span style={{ color: hasLetter ? "#06A776" : "#9ca3af" }}>
+              {hasLetter ? "✓" : "○"} 영문
+            </span>
+            <span style={{ color: hasDigit ? "#06A776" : "#9ca3af" }}>
+              {hasDigit ? "✓" : "○"} 숫자
+            </span>
+            <span style={{ color: hasSpecial ? "#06A776" : "#9ca3af" }}>
+              {hasSpecial ? "✓" : "○"} 특수문자
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

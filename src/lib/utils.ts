@@ -68,3 +68,23 @@ export function isValidPhoneKR(raw: string): boolean {
   const digits = raw.replace(/\D/g, "");
   return digits.length >= 9 && digits.length <= 11 && /^0\d+$/.test(digits);
 }
+
+/**
+ * 비밀번호 강도 검증
+ * 규칙: 최소 8자, 영문 + 숫자 + 특수문자 포함
+ */
+export function validatePassword(password: string): { ok: boolean; msg?: string } {
+  if (!password || password.length < 8) {
+    return { ok: false, msg: "비밀번호는 8자 이상이어야 합니다." };
+  }
+  if (!/[a-zA-Z]/.test(password)) {
+    return { ok: false, msg: "영문을 포함해주세요." };
+  }
+  if (!/\d/.test(password)) {
+    return { ok: false, msg: "숫자를 포함해주세요." };
+  }
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(password)) {
+    return { ok: false, msg: "특수문자(!@#$%^&* 등)를 1개 이상 포함해주세요." };
+  }
+  return { ok: true };
+}

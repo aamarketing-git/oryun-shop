@@ -7,6 +7,7 @@ import { formatKRW, formatUSDT, formatPhoneKR } from "@/lib/utils";
 import { CopyText } from "@/components/ui/CopyText";
 import { Modal } from "@/components/ui/Modal";
 import { AddressSearch } from "@/components/checkout/AddressSearch";
+import { QRCodeSVG } from "qrcode.react";
 
 type PaymentMethod = "bank_transfer" | "usdt";
 
@@ -162,21 +163,27 @@ export function CheckoutForm({
               {usdtWallets.length > 0 ? (
                 <div>
                   <p className="font-semibold text-base mb-3">공급자 USDT 받는 주소</p>
-                  <div className="bg-white rounded-xl p-4 border border-gray-200 space-y-3">
+                  <div className="bg-white rounded-xl p-4 border border-gray-200 space-y-4">
                     {usdtWallets.map((w) => (
-                      <div key={w.chain}>
-                        <p className="text-xs text-gray-500 mb-1">{w.chain}</p>
-                        <CopyText
-                          value={w.addr!}
-                          display={w.addr!}
-                          mono
-                          label={`${w.chain} 주소`}
-                        />
+                      <div key={w.chain} className="flex items-start gap-4 pb-4 border-b border-gray-100 last:border-0 last:pb-0">
+                        {/* QR 코드 */}
+                        <div className="flex-shrink-0 bg-white p-1.5 rounded-md border border-gray-200">
+                          <QRCodeSVG value={w.addr!} size={80} level="M" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-[#3182F6] mb-1">{w.chain}</p>
+                          <CopyText
+                            value={w.addr!}
+                            display={w.addr!}
+                            mono
+                            label={`${w.chain} 주소`}
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>
                   <p className="mt-2 text-xs text-muted-foreground">
-                    💡 주소를 <strong>클릭하면 바로 복사</strong>됩니다. 본인 지갑이 지원하는 체인을 선택해 송금하세요.
+                    💡 QR 스캔으로 송금하거나, 주소를 클릭하여 복사하세요.
                   </p>
                 </div>
               ) : (
@@ -187,6 +194,27 @@ export function CheckoutForm({
             </div>
           )}
         </section>
+
+        {/* DMAX Staking Wallet — USDT 결제 시 필수 */}
+        {payment === "usdt" && (
+          <section className="bg-background border border-border rounded-xl p-6">
+            <label htmlFor="staking_wallet" className="block text-sm font-medium mb-2">
+              DMAX Staking Wallet 주소 <span className="text-destructive">*</span>
+            </label>
+            <p className="text-xs text-muted-foreground mb-3">
+              USDT 결제 시 본인의 DMAX 스테이킹 지갑 주소를 입력해주세요.
+              스테이킹 보상이 이 지갑으로 지급됩니다.
+            </p>
+            <input
+              id="staking_wallet"
+              name="staking_wallet_address"
+              type="text"
+              required={payment === "usdt"}
+              placeholder="0x... 또는 T..."
+              className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-sm font-mono focus:border-[#3182F6] focus:ring-1 focus:ring-[#3182F6]"
+            />
+          </section>
+        )}
 
         {error && (
           <div className="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
