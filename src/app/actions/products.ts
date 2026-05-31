@@ -164,6 +164,37 @@ export async function createSellerProduct(input: {
   return { ok: true, productId: data.id };
 }
 
+// 관리자 전용: 상품 대표 이미지만 업데이트
+export async function updateProductMainImage({
+  productId,
+  imageUrl,
+}: {
+  productId: string;
+  imageUrl: string;
+}): Promise<{ ok?: true; error?: string }> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: '인증이 필요합니다.' };
+
+  const { data: profile } = await supabase
+    .from('profiles').select('role').eq('id', user.id).single();
+  if (profile?.role !== 'admin') return { error: '관리자만 가능합니다.' };
+
+  const admin = createServiceClient();
+  const { error } = await admin
+    .from('products')
+    .update({ main_image_url: imageUrl })
+    .eq('id', productId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath('/admin/products');
+  revalidatePath('/seller/products');
+  revalidatePath(`/products/${productId}`);
+  revalidatePath('/');
+  return { ok: true };
+}
+
 // 관리자가 직접 상품을 등록 — 이미지/상세 포함 + 즉시 승인 가능
 export async function createAdminProduct(input: {
   sellerId: string;

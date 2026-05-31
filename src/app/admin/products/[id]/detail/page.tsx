@@ -23,20 +23,28 @@ export default async function AdminProductDetailEditPage({
     .eq('product_id', params.id)
     .maybeSingle();
 
+  // 기존 sections 중 첫 번째 detail_pdf/detail_image의 URL 추출
+  // 옛날 형식(hero/feature 등)이면 첫 번째 항목의 image_url 사용
+  let initialDetailUrl = '';
+  if (Array.isArray(detail?.sections) && detail.sections.length > 0) {
+    const first = detail.sections[0] as any;
+    initialDetailUrl = first.url || first.image_url || first.image || '';
+  }
+
   return (
-    <div>
-      <p className="section-eyebrow">Admin · Detail Builder</p>
+    <div className="max-w-2xl">
+      <p className="section-eyebrow">Admin</p>
       <h1 className="mt-2 text-3xl font-semibold">{product.name}</h1>
       <p className="mt-1 text-sm text-gray-500">
-        통일된 디자인 시스템을 기반으로 상세페이지를 구성합니다. 공급자는 수정할 수 없습니다.
+        대표 이미지와 상세 페이지(이미지 또는 PDF)를 업로드하세요.
       </p>
 
       <div className="mt-8">
         <ProductDetailEditor
           productId={product.id}
           productStatus={product.status}
-          existingId={detail?.id}
-          initialSections={detail?.sections ?? []}
+          initialMainImage={product.main_image_url ?? ''}
+          initialDetailUrl={initialDetailUrl}
         />
       </div>
     </div>
