@@ -82,19 +82,19 @@ export function AddressSearch({
   return (
     <div className="space-y-2">
       {/* 우편번호 + 검색 버튼 */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 w-full">
         <input
           name={postalCodeName}
           value={postalCode}
           onChange={(e) => setPostalCode(e.target.value)}
           placeholder="우편번호"
           readOnly
-          className="flex-1 px-4 py-2.5 rounded-lg border border-input bg-gray-50 text-sm cursor-default"
+          className="min-w-0 flex-1 max-w-[140px] px-3 py-2.5 rounded-lg border border-input bg-gray-50 text-sm cursor-default"
         />
         <button
           type="button"
           onClick={openSearch}
-          className="rounded-lg bg-[#3182F6] text-white px-4 py-2.5 text-sm font-semibold hover:bg-[#1B64DA] transition whitespace-nowrap"
+          className="flex-shrink-0 rounded-lg bg-[#3182F6] text-white px-4 py-2.5 text-sm font-semibold hover:bg-[#1B64DA] transition whitespace-nowrap"
         >
           주소 검색
         </button>

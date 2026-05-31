@@ -52,7 +52,7 @@ export async function createOrder(
 export async function submitTxid(input: {
   orderId: string;
   txHash: string;
-  chain: 'TRC20' | 'ERC20';
+  chain: 'TRC20' | 'ERC20' | 'BSC';
 }): Promise<{ ok?: true; error?: string }> {
   const supabase = createClient();
   const txHash = input.txHash.trim();

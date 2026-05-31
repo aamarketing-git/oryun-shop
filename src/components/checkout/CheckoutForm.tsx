@@ -42,7 +42,7 @@ export function CheckoutForm({
 
   // TXID 제출 상태 (USDT 주문 완료 모달용)
   const [txidInput, setTxidInput] = useState("");
-  const [txidChain, setTxidChain] = useState<"TRC20" | "ERC20">("TRC20");
+  const [txidChain, setTxidChain] = useState<"TRC20" | "ERC20" | "BSC">("TRC20");
   const [txidLoading, setTxidLoading] = useState(false);
   const [txidError, setTxidError] = useState<string | null>(null);
   const [txidSubmitted, setTxidSubmitted] = useState(false);
@@ -316,13 +316,13 @@ export function CheckoutForm({
                 <label className="block text-xs font-semibold mb-1.5 text-gray-700">
                   체인 선택
                 </label>
-                <div className="flex gap-2">
-                  {(["TRC20", "ERC20"] as const).map((c) => (
+                <div className="grid grid-cols-3 gap-2">
+                  {(["TRC20", "ERC20", "BSC"] as const).map((c) => (
                     <button
                       key={c}
                       type="button"
                       onClick={() => setTxidChain(c)}
-                      className={`flex-1 py-2 rounded-lg text-sm font-medium transition ${
+                      className={`py-2 rounded-lg text-sm font-medium transition ${
                         txidChain === c
                           ? "bg-[#3182F6] text-white"
                           : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -342,7 +342,11 @@ export function CheckoutForm({
                   type="text"
                   value={txidInput}
                   onChange={(e) => setTxidInput(e.target.value)}
-                  placeholder={txidChain === "TRC20" ? "TRC20 트랜잭션 해시" : "0x로 시작하는 해시"}
+                  placeholder={
+                    txidChain === "TRC20"
+                      ? "TRC20 트랜잭션 해시 (64자리)"
+                      : "0x로 시작하는 해시 (EVM)"
+                  }
                   className="w-full px-3 py-2.5 rounded-lg border border-gray-300 bg-white text-sm font-mono focus:border-[#3182F6] focus:ring-1 focus:ring-[#3182F6]"
                 />
               </div>

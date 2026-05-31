@@ -24,9 +24,10 @@ export function formatDate(d: string | Date): string {
 }
 
 /** USDT TXID 형식 기본 검증 (TRC20: 64-hex / ERC20: 0x + 64-hex) */
-export function isValidTxHash(hash: string, chain: "TRC20" | "ERC20" = "TRC20"): boolean {
+export function isValidTxHash(hash: string, chain: "TRC20" | "ERC20" | "BSC" = "TRC20"): boolean {
   const trimmed = hash.trim();
-  if (chain === "ERC20") return /^0x[a-fA-F0-9]{64}$/.test(trimmed);
+  // ERC20과 BSC 모두 EVM 체인 — 0x로 시작, 64자리 hex
+  if (chain === "ERC20" || chain === "BSC") return /^0x[a-fA-F0-9]{64}$/.test(trimmed);
   return /^[a-fA-F0-9]{64}$/.test(trimmed);
 }
 
