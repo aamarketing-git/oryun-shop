@@ -35,4 +35,20 @@ export async function requireRole(role: Role | Role[]) {
 }
 
 export const requireAdmin = () => requireRole("admin");
-export const requireSeller = () => requireRole(["seller", "admin"]);
+
+/**
+ * 공급자 페이지 접근 권한.
+ * - seller만 통과
+ * - admin은 자기 대시보드(/admin/dashboard)로 자동 이동 (역할 혼동 방지)
+ * - 그 외는 홈으로
+ */
+export async function requireSeller() {
+  const { user, profile } = await requireAuth();
+  if (profile.role === "admin") {
+    redirect("/admin/dashboard");
+  }
+  if (profile.role !== "seller") {
+    redirect("/");
+  }
+  return { user, profile };
+}

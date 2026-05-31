@@ -77,6 +77,8 @@ export async function confirmPayment(orderId: string): Promise<{ ok?: true; erro
   revalidatePath(`/seller/orders`);
   revalidatePath(`/seller/orders/${orderId}`);
   revalidatePath(`/account/orders/${orderId}`);
+  revalidatePath(`/admin/orders`);
+  revalidatePath(`/admin/orders/${orderId}`);
   return { ok: true };
 }
 

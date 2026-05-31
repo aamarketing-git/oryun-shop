@@ -89,11 +89,17 @@ export default async function SellerProductsPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    {p.status === 'rejected' ? (
-                      <ResubmitButton productId={p.id} />
-                    ) : (
-                      <span className="text-xs text-gray-400">—</span>
-                    )}
+                    <div className="flex items-center justify-center gap-2">
+                      <a
+                        href={`/seller/products/${p.id}/edit`}
+                        className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition"
+                      >
+                        수정
+                      </a>
+                      {p.status === 'rejected' && (
+                        <ResubmitButton productId={p.id} />
+                      )}
+                    </div>
                   </td>
                 </tr>,
               ];

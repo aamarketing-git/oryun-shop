@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { createServiceClient } from '@/lib/supabase/server';
 import { formatKRW, formatDate } from '@/lib/utils';
+import ConfirmPaymentButton from '@/components/order/ConfirmPaymentButton';
 
 const STATUS_LABEL: Record<string, string> = {
   pending_payment: '결제 대기',
@@ -59,6 +60,7 @@ export default async function AdminOrdersPage({
               <th className="px-6 py-3">결제</th>
               <th className="px-6 py-3 text-center">상태</th>
               <th className="px-6 py-3">일시</th>
+              <th className="px-6 py-3 text-center">관리</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -77,11 +79,18 @@ export default async function AdminOrdersPage({
                   </span>
                 </td>
                 <td className="px-6 py-3 text-xs text-gray-500">{formatDate(o.created_at)}</td>
+                <td className="px-6 py-3 text-center">
+                  {o.status === 'pending_payment' ? (
+                    <ConfirmPaymentButton orderId={o.id} label="결제완료" size="sm" />
+                  ) : (
+                    <span className="text-xs text-gray-400">—</span>
+                  )}
+                </td>
               </tr>
             ))}
             {(!orders || orders.length === 0) && (
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                   주문이 없습니다.
                 </td>
               </tr>

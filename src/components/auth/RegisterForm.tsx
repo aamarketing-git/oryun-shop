@@ -33,12 +33,26 @@ export function RegisterForm({ isSeller, nextPath }: { isSeller: boolean; nextPa
   const [existingSeller, setExistingSeller] = useState<boolean>(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
-  // 로그인 상태 + 기존 sellers 행 확인
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // 로그인 상태 + 기존 sellers 행 확인 + 관리자 차단
   useEffect(() => {
     const check = async () => {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (user && isSeller) {
+        // 관리자 차단 — 공급자 신청 자체가 불가능
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role, phone")
+          .eq("id", user.id)
+          .single();
+        if (profile?.role === "admin") {
+          setIsAdmin(true);
+          setCheckingAuth(false);
+          return;
+        }
+
         setCurrentUser({ id: user.id, email: user.email ?? "" });
         // 이미 공급자 신청한 적 있는지 확인
         const { data: existing } = await supabase
@@ -52,12 +66,7 @@ export function RegisterForm({ isSeller, nextPath }: { isSeller: boolean; nextPa
           router.push("/seller/pending");
           return;
         }
-        // 프로필에서 전화번호 가져와서 자동 입력
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("phone")
-          .eq("id", user.id)
-          .single();
+        // 프로필에서 전화번호 자동 입력
         if (profile?.phone) setPhone(formatPhoneKR(profile.phone));
       }
       setCheckingAuth(false);
@@ -161,6 +170,28 @@ export function RegisterForm({ isSeller, nextPath }: { isSeller: boolean; nextPa
   if (checkingAuth) {
     return (
       <div className="text-center py-8 text-sm text-gray-500">확인 중...</div>
+    );
+  }
+
+  // 관리자는 공급자 신청 불가
+  if (isAdmin) {
+    return (
+      <div className="text-center py-8">
+        <div className="inline-block rounded-2xl border border-amber-200 bg-amber-50 p-6 max-w-sm">
+          <p className="text-2xl mb-3">⚠️</p>
+          <p className="text-base font-semibold text-amber-900 mb-2">관리자는 공급자로 신청할 수 없어요</p>
+          <p className="text-sm text-amber-800 mb-4">
+            관리자 계정과 공급자 계정은 분리되어야 합니다.
+            <br />공급자 활동이 필요하시면 별도 이메일로 가입해주세요.
+          </p>
+          <Link
+            href="/admin/dashboard"
+            className="inline-block rounded-[14px] bg-[#3182F6] text-white font-semibold px-5 py-2.5 text-sm hover:bg-[#1B64DA] transition"
+          >
+            관리자 대시보드로 이동
+          </Link>
+        </div>
+      </div>
     );
   }
 

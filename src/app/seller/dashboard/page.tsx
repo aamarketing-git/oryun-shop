@@ -10,6 +10,11 @@ export default async function SellerDashboardPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect('/auth/login');
 
+  // 관리자는 관리자 대시보드로
+  const { data: profile } = await supabase
+    .from('profiles').select('role').eq('id', user.id).single();
+  if (profile?.role === 'admin') redirect('/admin/dashboard');
+
   const { data: seller } = await supabase.from('sellers').select('*').eq('user_id', user.id).single();
   // 공급자 신청 자체가 없으면 신청 페이지로
   if (!seller) redirect('/auth/register?role=seller');

@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveProductDetail, approveProduct } from '@/app/actions/products';
+import { ImagePicker } from '@/components/ui/ImagePicker';
 
 type Section =
   | { type: 'hero'; title: string; subtitle?: string; image_url?: string }
@@ -234,12 +235,13 @@ function SectionForm({ section, onChange }: { section: Section; onChange: (p: an
             />
           </div>
           <div>
-            <label className={label}>이미지 URL</label>
-            <input
-              className={input}
-              value={section.image_url ?? ''}
-              onChange={(e) => onChange({ image_url: e.target.value })}
-            />
+            <label className={label}>이미지 (업로드 또는 URL)</label>
+            <div className="mt-1">
+              <ImagePicker
+                value={section.image_url ?? ''}
+                onChange={(url) => onChange({ image_url: url })}
+              />
+            </div>
           </div>
         </div>
       );
@@ -264,12 +266,13 @@ function SectionForm({ section, onChange }: { section: Section; onChange: (p: an
             />
           </div>
           <div>
-            <label className={label}>이미지 URL</label>
-            <input
-              className={input}
-              value={section.image_url ?? ''}
-              onChange={(e) => onChange({ image_url: e.target.value })}
-            />
+            <label className={label}>이미지 (업로드 또는 URL)</label>
+            <div className="mt-1">
+              <ImagePicker
+                value={section.image_url ?? ''}
+                onChange={(url) => onChange({ image_url: url })}
+              />
+            </div>
           </div>
           <div>
             <label className={label}>정렬</label>

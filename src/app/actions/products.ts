@@ -162,3 +162,60 @@ export async function createSellerProduct(input: {
   revalidatePath('/seller/products');
   return { ok: true, productId: data.id };
 }
+
+// 공급자: 본인 상품 수정 (status 무관 — pending/approved/rejected/hidden 모두 가능)
+// status가 approved여도 수정은 허용. (price/stock/image 등 자유롭게)
+// 단, status는 변경 못함 (그건 관리자 권한)
+export async function updateSellerProduct(input: {
+  productId: string;
+  name: string;
+  description: string;
+  priceKrw: number;
+  stock: number;
+  imageUrl: string;
+  categoryId?: string;
+  inquiryNumber?: string;
+  useDirectDelivery?: boolean;
+}): Promise<{ ok?: true; error?: string }> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: '로그인이 필요합니다.' };
+
+  // 본인 sellers 확인
+  const { data: seller } = await supabase
+    .from('sellers')
+    .select('id, status')
+    .eq('user_id', user.id)
+    .single();
+  if (!seller) return { error: '공급자 계정이 아닙니다.' };
+  if (seller.status !== 'approved') return { error: '승인된 공급자만 상품을 수정할 수 있습니다.' };
+
+  // 본인 상품인지 확인
+  const { data: product } = await supabase
+    .from('products')
+    .select('id, seller_id, status')
+    .eq('id', input.productId)
+    .single();
+  if (!product) return { error: '상품을 찾을 수 없습니다.' };
+  if (product.seller_id !== seller.id) return { error: '본인의 상품만 수정할 수 있습니다.' };
+
+  // 가격/재고/이미지 등 업데이트
+  const { error } = await supabase
+    .from('products')
+    .update({
+      name: input.name,
+      short_description: input.description,
+      price_krw: input.priceKrw,
+      stock: input.stock,
+      main_image_url: input.imageUrl,
+      category_id: input.categoryId || null,
+      inquiry_number: input.inquiryNumber || null,
+      use_direct_delivery: input.useDirectDelivery ?? false,
+    })
+    .eq('id', input.productId);
+
+  if (error) return { error: error.message };
+  revalidatePath('/seller/products');
+  revalidatePath(`/products/${input.productId}`);
+  return { ok: true };
+}

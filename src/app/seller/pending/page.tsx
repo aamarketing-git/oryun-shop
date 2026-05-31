@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { SellerPendingDialog } from "@/components/seller/SellerPendingDialog";
 
 const STATUS_INFO: Record<
   string,
@@ -48,6 +49,16 @@ export default async function SellerPendingPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
+  // 관리자는 공급자 페이지 접근 차단 → 관리자 대시보드로
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  if (profile?.role === "admin") {
+    redirect("/admin/dashboard");
+  }
+
   const { data: seller } = await supabase
     .from("sellers")
     .select("status, business_name, representative_name, contact_phone, bank_name, rejected_reason, created_at")
@@ -86,6 +97,7 @@ export default async function SellerPendingPage() {
 
   return (
     <div className="min-h-[70vh] py-16 px-6">
+      <SellerPendingDialog status={seller.status} />
       <div className="max-w-xl mx-auto">
         {/* 큰 상태 배지 */}
         <div
