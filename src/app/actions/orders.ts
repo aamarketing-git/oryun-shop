@@ -22,11 +22,15 @@ export async function createOrder(
   formData: FormData,
 ): Promise<{ ok: true; orderId: string } | { ok: false; error: string }> {
   const supabase = createClient();
-  const stakingWallet = (formData.get('staking_wallet_address') as string)?.trim();
-  if (!stakingWallet) return { ok: false, error: '오륜 스테이킹 Wallet 주소는 필수입니다.' };
-
-  const productId = formData.get('product_id') as string;
   const paymentMethod = formData.get('payment_method') as 'bank_transfer' | 'usdt';
+  const productId = formData.get('product_id') as string;
+
+  // 스테이킹 지갑은 USDT 결제 시에만 필수 — 계좌이체는 placeholder('-')로 채움
+  const stakingRaw = (formData.get('staking_wallet_address') as string)?.trim();
+  if (paymentMethod === 'usdt' && !stakingRaw) {
+    return { ok: false, error: 'USDT 결제 시 스테이킹 Wallet 주소는 필수입니다.' };
+  }
+  const stakingWallet = stakingRaw || '-';  // 계좌이체는 placeholder
 
   const shipping = {
     recipient: formData.get('recipient') ?? '',

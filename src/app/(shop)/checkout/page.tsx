@@ -19,7 +19,7 @@ export default async function CheckoutPage({
     .from("products")
     .select(`
       id, name, price_krw, stock, main_image_url,
-      seller:sellers!inner(business_name, bank_name, bank_account_number, bank_account_holder)
+      seller:sellers!inner(business_name, bank_name, bank_account_number, bank_account_holder, usdt_wallet_trc20, usdt_wallet_erc20, usdt_wallet_bsc)
     `)
     .eq("id", searchParams.product)
     .eq("status", "approved")
@@ -67,6 +67,11 @@ export default async function CheckoutPage({
           name: seller?.bank_name ?? "",
           account: seller?.bank_account_number ?? "",
           holder: seller?.bank_account_holder ?? "",
+        }}
+        sellerUsdt={{
+          trc20: seller?.usdt_wallet_trc20,
+          erc20: seller?.usdt_wallet_erc20,
+          bsc: seller?.usdt_wallet_bsc,
         }}
       />
     </div>

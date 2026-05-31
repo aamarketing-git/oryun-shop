@@ -83,55 +83,9 @@ export default async function HomePage() {
               </Link>
             </div>
 
-            {/* 가로 스크롤 (모바일/PC 동일 동작) */}
-            <div className="apple-container">
-              <div className="h-scroll">
-                {catProducts.map((p) => (
-                  <Link
-                    key={p.id}
-                    href={`/products/${p.id}`}
-                    className="h-scroll-card group block"
-                  >
-                    <div className="aspect-square bg-muted rounded-2xl overflow-hidden mb-2 relative">
-                      {p.main_image_url ? (
-                        <Image
-                          src={p.main_image_url}
-                          alt={p.name}
-                          fill
-                          sizes="(max-width:768px) 44vw, 240px"
-                          className="object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
-                          이미지 준비중
-                        </div>
-                      )}
-                    </div>
-                    <h3 className="text-[13px] font-semibold text-foreground mb-0.5 leading-snug line-clamp-2">
-                      {p.name}
-                    </h3>
-                    <p className="text-[14px] font-bold text-foreground">
-                      {formatKRW(Number(p.price_krw))}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </section>
-        );
-      })}
-
-      {/* ====== 분류 없음 상품 (있을 때만) ====== */}
-      {productsWithoutCategory.length > 0 && (
-        <section className="pt-2 pb-6">
-          <div className="apple-container mb-3">
-            <h2 className="text-[19px] md:text-[22px] font-bold text-foreground">
-              기타 상품
-            </h2>
-          </div>
-          <div className="apple-container">
-            <div className="h-scroll">
-              {productsWithoutCategory.map((p) => (
+            {/* 캐러셀 — 화면 끝까지 확장, 첫/마지막 카드만 padding */}
+            <div className="h-scroll px-5 md:px-8">
+              {catProducts.map((p) => (
                 <Link
                   key={p.id}
                   href={`/products/${p.id}`}
@@ -161,6 +115,48 @@ export default async function HomePage() {
                 </Link>
               ))}
             </div>
+          </section>
+        );
+      })}
+
+      {/* ====== 분류 없음 상품 ====== */}
+      {productsWithoutCategory.length > 0 && (
+        <section className="pt-2 pb-6">
+          <div className="apple-container mb-3">
+            <h2 className="text-[19px] md:text-[22px] font-bold text-foreground">
+              기타 상품
+            </h2>
+          </div>
+          <div className="h-scroll px-5 md:px-8">
+            {productsWithoutCategory.map((p) => (
+              <Link
+                key={p.id}
+                href={`/products/${p.id}`}
+                className="h-scroll-card group block"
+              >
+                <div className="aspect-square bg-muted rounded-2xl overflow-hidden mb-2 relative">
+                  {p.main_image_url ? (
+                    <Image
+                      src={p.main_image_url}
+                      alt={p.name}
+                      fill
+                      sizes="(max-width:768px) 44vw, 240px"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+                      이미지 준비중
+                    </div>
+                  )}
+                </div>
+                <h3 className="text-[13px] font-semibold text-foreground mb-0.5 leading-snug line-clamp-2">
+                  {p.name}
+                </h3>
+                <p className="text-[14px] font-bold text-foreground">
+                  {formatKRW(Number(p.price_krw))}
+                </p>
+              </Link>
+            ))}
           </div>
         </section>
       )}
