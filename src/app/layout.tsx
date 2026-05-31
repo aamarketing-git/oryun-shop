@@ -19,12 +19,28 @@ export const metadata: Metadata = {
     default: "오륜쇼핑몰",
     template: "%s — 오륜쇼핑몰",
   },
-  description: "오륜쇼핑몰 — A new way to shop. 미니멀하고 신뢰할 수 있는 멀티벤더 마켓플레이스.",
+  description: "행복은 선택이야 ~ 오륜쇼핑몰. 미니멀하고 신뢰할 수 있는 멀티벤더 마켓플레이스.",
   metadataBase: new URL(siteUrl),
   openGraph: {
     type: "website",
     locale: "ko_KR",
     siteName: "오륜쇼핑몰",
+    title: "오륜쇼핑몰",
+    description: "행복은 선택이야 ~ 오륜쇼핑몰",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1376,
+        height: 768,
+        alt: "오륜쇼핑몰 — 행복은 선택이야",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "오륜쇼핑몰",
+    description: "행복은 선택이야 ~ 오륜쇼핑몰",
+    images: ["/og-image.png"],
   },
   robots: { index: true, follow: true },
 };
