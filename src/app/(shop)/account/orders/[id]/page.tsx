@@ -233,16 +233,6 @@ export default async function OrderDetailPage({ params }: { params: { id: string
             </dl>
           </div>
 
-          {/* Staking Wallet (USDT만) */}
-          {order.payment_method === 'usdt' && order.staking_wallet_address && order.staking_wallet_address !== '-' && (
-            <div className="rounded-2xl bg-gray-50 p-5">
-              <h3 className="font-semibold mb-2">오륜 스테이킹 Wallet</h3>
-              <p className="break-all font-mono text-xs text-gray-600">
-                {order.staking_wallet_address}
-              </p>
-            </div>
-          )}
-
           {/* 공급자 정보 */}
           <div className="rounded-2xl bg-gray-50 p-5">
             <h3 className="font-semibold mb-2">공급자</h3>

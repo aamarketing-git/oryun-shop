@@ -22,11 +22,11 @@ export async function Header() {
       style={{ WebkitBackdropFilter: "blur(20px)" }}
     >
       <nav className="apple-container">
-        <div className="flex items-center h-14">
+        <div className="flex items-center h-16 md:h-20">
           {/* Logo */}
           <Link
             href="/"
-            className="font-display text-[19px] tracking-tight font-bold text-foreground mr-auto hover:opacity-70 transition"
+            className="font-display text-[28px] md:text-[38px] tracking-tight font-bold text-foreground mr-auto hover:opacity-70 transition leading-none"
           >
             오륜쇼핑몰
           </Link>

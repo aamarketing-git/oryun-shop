@@ -25,12 +25,8 @@ export async function createOrder(
   const paymentMethod = formData.get('payment_method') as 'bank_transfer' | 'usdt';
   const productId = formData.get('product_id') as string;
 
-  // 스테이킹 지갑은 USDT 결제 시에만 필수 — 계좌이체는 placeholder('-')로 채움
-  const stakingRaw = (formData.get('staking_wallet_address') as string)?.trim();
-  if (paymentMethod === 'usdt' && !stakingRaw) {
-    return { ok: false, error: 'USDT 결제 시 스테이킹 Wallet 주소는 필수입니다.' };
-  }
-  const stakingWallet = stakingRaw || '-';  // 계좌이체는 placeholder
+  // staking_wallet_address는 DB에서 NOT NULL이라 placeholder 사용 (실제로는 TXID로 추적)
+  const stakingWallet = '-';
 
   const shipping = {
     recipient: formData.get('recipient') ?? '',
