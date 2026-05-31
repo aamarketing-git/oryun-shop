@@ -66,7 +66,14 @@ export default async function AdminOrdersPage({
           <tbody className="divide-y divide-gray-100">
             {orders?.map((o: any) => (
               <tr key={o.id} className="hover:bg-gray-50">
-                <td className="px-6 py-3 font-medium">{o.order_number}</td>
+                <td className="px-6 py-3 font-medium">
+                  <Link
+                    href={`/admin/orders/${o.id}`}
+                    className="text-[#3182F6] hover:underline"
+                  >
+                    {o.order_number}
+                  </Link>
+                </td>
                 <td className="px-6 py-3 text-gray-600">{o.sellers?.business_name}</td>
                 <td className="px-6 py-3 text-gray-600">{o.profiles?.email}</td>
                 <td className="px-6 py-3 text-right">{formatKRW(Number(o.total_krw))}</td>
@@ -80,11 +87,17 @@ export default async function AdminOrdersPage({
                 </td>
                 <td className="px-6 py-3 text-xs text-gray-500">{formatDate(o.created_at)}</td>
                 <td className="px-6 py-3 text-center">
-                  {o.status === 'pending_payment' ? (
-                    <ConfirmPaymentButton orderId={o.id} label="결제완료" size="sm" />
-                  ) : (
-                    <span className="text-xs text-gray-400">—</span>
-                  )}
+                  <div className="flex items-center justify-center gap-2">
+                    {o.status === 'pending_payment' && (
+                      <ConfirmPaymentButton orderId={o.id} label="결제완료" size="sm" />
+                    )}
+                    <Link
+                      href={`/admin/orders/${o.id}`}
+                      className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition whitespace-nowrap"
+                    >
+                      상세보기
+                    </Link>
+                  </div>
                 </td>
               </tr>
             ))}
