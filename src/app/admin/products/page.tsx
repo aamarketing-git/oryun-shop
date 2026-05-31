@@ -38,11 +38,20 @@ export default async function AdminProductsPage({
 
   return (
     <div>
-      <div className="flex items-end justify-between">
+      <div className="flex items-end justify-between gap-4 flex-wrap">
         <div>
           <p className="section-eyebrow">Admin</p>
           <h1 className="mt-2 text-3xl font-semibold">상품 관리</h1>
+          <p className="mt-2 text-sm text-gray-500">
+            공급자가 신청한 상품을 승인하거나, 관리자가 직접 등록할 수 있어요.
+          </p>
         </div>
+        <Link
+          href="/admin/products/new"
+          className="rounded-[14px] bg-[#3182F6] text-white font-semibold px-5 py-2.5 text-sm hover:bg-[#1B64DA] transition whitespace-nowrap"
+        >
+          + 상품 직접 등록
+        </Link>
       </div>
 
       <div className="mt-6 flex gap-2">
@@ -80,14 +89,23 @@ export default async function AdminProductsPage({
               <tr key={p.id}>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    {p.main_image_url && (
+                    {p.main_image_url ? (
                       <img
                         src={p.main_image_url}
                         alt=""
-                        className="h-10 w-10 rounded-lg bg-gray-50 object-cover"
+                        className="h-12 w-12 rounded-lg bg-gray-50 object-cover flex-shrink-0"
                       />
+                    ) : (
+                      <div className="h-12 w-12 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 text-[10px] font-medium flex-shrink-0 leading-tight text-center">
+                        이미지<br/>없음
+                      </div>
                     )}
-                    <span className="font-medium">{p.name}</span>
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{p.name}</p>
+                      <p className="text-xs text-gray-400 font-mono mt-0.5">
+                        {String(p.id).slice(0, 8).toUpperCase()}
+                      </p>
+                    </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 text-gray-600">{p.sellers?.business_name}</td>

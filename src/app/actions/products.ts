@@ -164,7 +164,63 @@ export async function createSellerProduct(input: {
   return { ok: true, productId: data.id };
 }
 
-// 공급자: 본인 상품 수정 (status 무관 — pending/approved/rejected/hidden 모두 가능)
+// 관리자가 직접 상품을 등록 — 이미지/상세 포함 + 즉시 승인 가능
+export async function createAdminProduct(input: {
+  sellerId: string;
+  name: string;
+  description: string;
+  priceKrw: number;
+  stock: number;
+  imageUrl: string;
+  categoryId?: string;
+  inquiryNumber?: string;
+  useDirectDelivery?: boolean;
+  autoApprove?: boolean; // 즉시 승인 여부
+}): Promise<{ ok?: true; productId?: string; error?: string }> {
+  const supabase = createServiceClient();
+
+  // 관리자 권한 체크 (createClient가 아닌 createServiceClient를 쓰지만, 호출 페이지가 admin 보호)
+  const userClient = createClient();
+  const { data: { user } } = await userClient.auth.getUser();
+  if (!user) return { error: '인증이 필요합니다.' };
+  const { data: profile } = await userClient
+    .from('profiles').select('role').eq('id', user.id).single();
+  if (profile?.role !== 'admin') return { error: '관리자만 사용할 수 있습니다.' };
+
+  // seller 존재 확인
+  const { data: seller } = await supabase
+    .from('sellers')
+    .select('id')
+    .eq('id', input.sellerId)
+    .single();
+  if (!seller) return { error: '선택한 공급자를 찾을 수 없습니다.' };
+
+  const { data, error } = await supabase
+    .from('products')
+    .insert({
+      seller_id: input.sellerId,
+      name: input.name,
+      short_description: input.description,
+      price_krw: input.priceKrw,
+      stock: input.stock,
+      main_image_url: input.imageUrl || null,
+      category_id: input.categoryId || null,
+      inquiry_number: input.inquiryNumber || null,
+      use_direct_delivery: input.useDirectDelivery ?? false,
+      status: input.autoApprove ? 'approved' : 'pending',
+      ...(input.autoApprove ? { approved_at: new Date().toISOString() } : {}),
+    })
+    .select('id')
+    .single();
+
+  if (error) return { error: error.message };
+
+  revalidatePath('/admin/products');
+  revalidatePath('/seller/products');
+  revalidatePath('/');
+  return { ok: true, productId: data.id };
+}
+
 // status가 approved여도 수정은 허용. (price/stock/image 등 자유롭게)
 // 단, status는 변경 못함 (그건 관리자 권한)
 export async function updateSellerProduct(input: {

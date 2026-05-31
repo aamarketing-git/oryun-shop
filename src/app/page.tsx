@@ -41,15 +41,40 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* ====== 상단 검색 진입 (모든 화면 동일) ====== */}
+      {/* ====== 상단 검색바 + 전체보기 ====== */}
       <section className="apple-container pt-5 pb-4">
-        <Link
-          href="/products"
-          className="flex items-center gap-2.5 rounded-[14px] bg-muted px-4 py-3.5 text-muted-foreground hover:bg-[#E5E8EB] transition"
+        <form
+          action="/products"
+          method="GET"
+          className="flex items-center gap-2"
         >
-          <Search className="h-[18px] w-[18px]" />
-          <span className="text-[15px]">상품을 검색해보세요</span>
-        </Link>
+          <div className="relative flex-1">
+            <Search className="h-[18px] w-[18px] absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <input
+              type="search"
+              name="q"
+              placeholder="상품을 검색해보세요"
+              className="w-full pl-11 pr-4 py-3.5 rounded-[14px] bg-muted text-[15px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:bg-white focus:ring-1 focus:ring-[#3182F6] focus:border-[#3182F6] border border-transparent"
+            />
+          </div>
+          <button
+            type="submit"
+            className="rounded-[14px] bg-[#3182F6] text-white font-semibold px-5 py-3.5 text-sm hover:bg-[#1B64DA] transition whitespace-nowrap"
+          >
+            검색
+          </button>
+        </form>
+
+        {/* 모바일에서만 — "전체 상품 보기" 빠른 링크 */}
+        <div className="md:hidden mt-3 flex justify-end">
+          <Link
+            href="/products"
+            className="text-[13px] text-[#3182F6] font-semibold hover:underline flex items-center"
+          >
+            전체 상품 보기
+            <ChevronRight className="h-4 w-4" />
+          </Link>
+        </div>
       </section>
 
       {/* ====== 상품 없을 때 ====== */}
