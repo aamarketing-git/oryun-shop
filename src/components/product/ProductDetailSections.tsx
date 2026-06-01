@@ -53,7 +53,6 @@ function renderSection(sec: Section) {
     case "detail_pdf": {
       const url = (sec as any).url;
       if (!url) return null;
-<<<<<<< HEAD
       // Google Docs viewer로 감싸면 모바일에서도 안정적으로 렌더됨
       const viewerUrl = `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(url)}`;
       return (
@@ -71,44 +70,15 @@ function renderSection(sec: Section) {
             </div>
             {/* PDF 직접 열기 링크 */}
             <div className="mt-3 text-center">
-=======
-      return (
-        <section className="py-8 bg-white">
-          <div className="max-w-[900px] mx-auto px-5">
-            <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 text-center">
-              <div className="text-5xl mb-3">📄</div>
-              <h3 className="text-lg font-bold mb-2">상품 상세 PDF</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                자세한 상품 정보는 아래 PDF에서 확인하실 수 있습니다.
-              </p>
->>>>>>> 8a71bc1e0561081c08db597af10c8e80e5be148d
               <a
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
-<<<<<<< HEAD
                 className="inline-flex items-center gap-1.5 text-sm text-[#3182F6] font-semibold hover:underline"
               >
                 📄 새 탭에서 PDF 열기 →
               </a>
             </div>
-=======
-                className="inline-flex items-center gap-2 rounded-[14px] bg-[#3182F6] text-white font-semibold px-6 py-3 text-sm hover:bg-[#1B64DA] transition"
-              >
-                PDF 열기
-                <span>→</span>
-              </a>
-            </div>
-            {/* PDF iframe 미리보기 (지원 브라우저에서만 보임) */}
-            <div className="mt-4 hidden md:block">
-              <iframe
-                src={url}
-                className="w-full rounded-xl border border-gray-200"
-                style={{ height: "800px" }}
-                title="상품 상세 PDF"
-              />
-            </div>
->>>>>>> 8a71bc1e0561081c08db597af10c8e80e5be148d
           </div>
         </section>
       );
