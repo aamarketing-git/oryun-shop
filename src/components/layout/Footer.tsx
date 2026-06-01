@@ -57,6 +57,7 @@ export function Footer() {
           ))}
         </div>
 
+<<<<<<< HEAD
         {/* 고객센터 정보 — 공급자별 연락처 안내 */}
         <div className="bg-white rounded-2xl p-5 mb-8 border border-border">
           <h4 className="text-foreground font-semibold mb-2 text-sm">📞 고객센터 안내</h4>
@@ -86,6 +87,32 @@ export function Footer() {
               </p>
             </div>
           </div>
+=======
+        {/* 고객센터 정보 */}
+        <div className="bg-white rounded-2xl p-5 mb-8 border border-border">
+          <h4 className="text-foreground font-semibold mb-3 text-sm">📞 고객센터</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-[13px]">
+            <div>
+              <p className="text-muted-foreground mb-0.5">전화</p>
+              <a href="tel:010-3559-7297" className="text-foreground font-semibold hover:text-[#3182F6]">
+                010-3559-7297
+              </a>
+            </div>
+            <div>
+              <p className="text-muted-foreground mb-0.5">이메일</p>
+              <a href="mailto:aamarketing250611@gmail.com" className="text-foreground font-semibold hover:text-[#3182F6] break-all">
+                aamarketing250611@gmail.com
+              </a>
+            </div>
+            <div>
+              <p className="text-muted-foreground mb-0.5">상담 시간</p>
+              <p className="text-foreground font-semibold">평일 10:00 ~ 18:00<br/>(점심 12:00~13:00)</p>
+            </div>
+          </div>
+          <p className="mt-3 text-[11px] text-muted-foreground">
+            제품·배송·결제 관련 문의는 위 연락처로 부탁드립니다.
+          </p>
+>>>>>>> 8a71bc1e0561081c08db597af10c8e80e5be148d
         </div>
 
         <div className="pt-6 border-t border-border flex flex-col md:flex-row md:items-center md:justify-between gap-3">
