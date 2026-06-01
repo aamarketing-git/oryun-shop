@@ -10,8 +10,16 @@ export default async function SellerDashboardPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect('/auth/login');
 
+  // 관리자는 관리자 대시보드로
+  const { data: profile } = await supabase
+    .from('profiles').select('role').eq('id', user.id).single();
+  if (profile?.role === 'admin') redirect('/admin/dashboard');
+
   const { data: seller } = await supabase.from('sellers').select('*').eq('user_id', user.id).single();
-  if (!seller) redirect('/');
+  // 공급자 신청 자체가 없으면 신청 페이지로
+  if (!seller) redirect('/auth/register?role=seller');
+  // 승인 안 된 상태면 대기 페이지로 (pending/rejected/blocked)
+  if (seller.status !== 'approved') redirect('/seller/pending');
 
   const [{ count: productCount }, { count: pendingOrderCount }, { data: recentOrders }] =
     await Promise.all([
@@ -48,7 +56,7 @@ export default async function SellerDashboardPage() {
       <p className="section-eyebrow">Seller</p>
       <h1 className="mt-2 text-3xl font-semibold">{seller.business_name}</h1>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-3">
+      <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard label="7일 매출" value={formatKRW(weeklyRevenue)} />
         <StatCard label="등록 상품" value={String(productCount ?? 0)} />
         <StatCard label="결제 대기 주문" value={String(pendingOrderCount ?? 0)} />
@@ -61,25 +69,78 @@ export default async function SellerDashboardPage() {
             전체
           </Link>
         </div>
-        <ul className="mt-4 divide-y divide-gray-100 rounded-2xl border border-gray-200 bg-white">
-          {recentOrders?.map((o) => (
-            <li key={o.id} className="flex items-center justify-between p-5">
-              <div>
-                <Link href={`/seller/orders/${o.id}`} className="font-medium hover:underline">
-                  {o.order_number}
+        <ul className="mt-4 divide-y divide-gray-100 rounded-2xl border border-gray-200 bg-white overflow-hidden">
+          {recentOrders?.map((o) => {
+            const STATUS_LABEL: Record<string, string> = {
+              pending_payment: '결제 대기',
+              paid: '결제 완료',
+              preparing: '배송 준비',
+              shipping: '배송 중',
+              delivered: '배송 완료',
+              cancelled: '취소',
+              refunded: '환불',
+            };
+            const STATUS_COLOR: Record<string, string> = {
+              pending_payment: 'bg-amber-100 text-amber-800',
+              paid: 'bg-green-100 text-green-800',
+              preparing: 'bg-blue-100 text-blue-800',
+              shipping: 'bg-indigo-100 text-indigo-800',
+              delivered: 'bg-gray-100 text-gray-700',
+              cancelled: 'bg-red-100 text-red-700',
+            };
+            return (
+              <li key={o.id}>
+                {/* 전체 행을 링크로 → 어디든 클릭 가능 */}
+                <Link
+                  href={`/seller/orders/${o.id}`}
+                  className="flex items-center justify-between p-5 hover:bg-gray-50 transition"
+                >
+                  <div>
+                    <p className="font-medium">{o.order_number}</p>
+                    <p className="text-sm text-gray-500 mt-0.5">{formatDate(o.created_at)}</p>
+                  </div>
+                  <div className="text-right flex flex-col items-end gap-1">
+                    <p className="font-medium">{formatKRW(Number(o.total_krw))}</p>
+                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_COLOR[o.status] ?? 'bg-gray-100'}`}>
+                      {STATUS_LABEL[o.status] ?? o.status}
+                    </span>
+                  </div>
                 </Link>
-                <p className="text-sm text-gray-500">{formatDate(o.created_at)}</p>
-              </div>
-              <div className="text-right">
-                <p className="font-medium">{formatKRW(Number(o.total_krw))}</p>
-                <p className="text-xs text-gray-500">{o.status}</p>
-              </div>
-            </li>
-          ))}
+              </li>
+            );
+          })}
           {(!recentOrders || recentOrders.length === 0) && (
             <li className="p-8 text-center text-gray-500">아직 주문이 없습니다.</li>
           )}
         </ul>
+      </section>
+
+      {/* 운영팀(관리자) 연락처 — 공급자에게만 노출 */}
+      <section className="mt-8 rounded-2xl border border-[#C7DCFC] bg-[#E8F1FE] p-5">
+        <h2 className="text-base font-bold text-[#1B64DA] mb-2">🛡️ 운영팀 연락처</h2>
+        <p className="text-xs text-[#1B64DA] mb-3">
+          공급자 전용 안내입니다. 정산 · 운영 · 시스템 관련 문의는 아래로 연락주세요.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+          <div className="bg-white rounded-xl p-3">
+            <p className="text-xs text-gray-500 mb-0.5">전화</p>
+            <a href="tel:010-3559-7297" className="font-semibold text-foreground hover:text-[#3182F6]">
+              010-3559-7297
+            </a>
+          </div>
+          <div className="bg-white rounded-xl p-3">
+            <p className="text-xs text-gray-500 mb-0.5">이메일</p>
+            <a href="mailto:aamarketing250611@gmail.com" className="font-semibold text-foreground hover:text-[#3182F6] text-xs break-all">
+              aamarketing250611@gmail.com
+            </a>
+          </div>
+          <div className="bg-white rounded-xl p-3">
+            <p className="text-xs text-gray-500 mb-0.5">상담 시간</p>
+            <p className="font-semibold text-foreground text-xs">
+              평일 10:00 ~ 18:00
+            </p>
+          </div>
+        </div>
       </section>
     </div>
   );

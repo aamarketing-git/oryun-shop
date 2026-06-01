@@ -20,7 +20,7 @@ export default async function SellerOrderDetailPage({ params }: { params: { id: 
     .select(
       `*,
        order_items(*, products(name, main_image_url)),
-       profiles!orders_customer_id_fkey(full_name, email),
+       profiles!orders_customer_id_fkey(name, email),
        txid_records(*),
        shipments(*)`,
     )
@@ -44,7 +44,30 @@ export default async function SellerOrderDetailPage({ params }: { params: { id: 
           <h1 className="text-3xl font-semibold">{order.order_number}</h1>
           <p className="mt-1 text-sm text-gray-500">{formatDate(order.created_at)}</p>
         </div>
-        <span className="rounded-full bg-gray-100 px-4 py-1.5 text-sm font-medium">{order.status}</span>
+        {(() => {
+          const STATUS_LABEL: Record<string, string> = {
+            pending_payment: '결제 대기',
+            paid: '결제 완료',
+            preparing: '배송 준비',
+            shipping: '배송 중',
+            delivered: '배송 완료',
+            cancelled: '취소',
+            refunded: '환불',
+          };
+          const STATUS_BG: Record<string, string> = {
+            pending_payment: 'bg-amber-100 text-amber-800',
+            paid: 'bg-green-100 text-green-800',
+            preparing: 'bg-blue-100 text-blue-800',
+            shipping: 'bg-indigo-100 text-indigo-800',
+            delivered: 'bg-gray-100 text-gray-700',
+            cancelled: 'bg-red-100 text-red-700',
+          };
+          return (
+            <span className={`rounded-full px-4 py-1.5 text-sm font-semibold ${STATUS_BG[order.status] ?? 'bg-gray-100'}`}>
+              {STATUS_LABEL[order.status] ?? order.status}
+            </span>
+          );
+        })()}
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
@@ -93,7 +116,16 @@ export default async function SellerOrderDetailPage({ params }: { params: { id: 
             <section className="rounded-2xl border border-gray-200 bg-white p-6">
               <h2 className="font-semibold">배송 등록</h2>
               <div className="mt-4">
-                <ShipmentForm orderId={order.id} />
+                <ShipmentForm
+                  orderId={order.id}
+                  shipping={{
+                    recipient: order.shipping_recipient,
+                    phone: order.shipping_phone,
+                    postal_code: order.shipping_postal_code,
+                    address: order.shipping_address,
+                    address_detail: order.shipping_address_detail,
+                  }}
+                />
               </div>
             </section>
           )}
@@ -143,7 +175,7 @@ export default async function SellerOrderDetailPage({ params }: { params: { id: 
         <aside className="space-y-4">
           <div className="rounded-2xl bg-gray-50 p-5">
             <h3 className="font-semibold">고객</h3>
-            <p className="mt-2 text-sm">{order.profiles?.full_name ?? '—'}</p>
+            <p className="mt-2 text-sm">{order.profiles?.name ?? '—'}</p>
             <p className="text-xs text-gray-500">{order.profiles?.email}</p>
           </div>
 

@@ -22,11 +22,15 @@ export async function createOrder(
   formData: FormData,
 ): Promise<{ ok: true; orderId: string } | { ok: false; error: string }> {
   const supabase = createClient();
-  const stakingWallet = (formData.get('staking_wallet_address') as string)?.trim();
-  if (!stakingWallet) return { ok: false, error: '오륜 스테이킹 Wallet 주소는 필수입니다.' };
-
-  const productId = formData.get('product_id') as string;
   const paymentMethod = formData.get('payment_method') as 'bank_transfer' | 'usdt';
+  const productId = formData.get('product_id') as string;
+
+  // DMAX Staking Wallet은 USDT 결제 시 필수
+  const stakingRaw = (formData.get('staking_wallet_address') as string)?.trim();
+  if (paymentMethod === 'usdt' && !stakingRaw) {
+    return { ok: false, error: 'USDT 결제 시 DMAX Staking Wallet 주소는 필수입니다.' };
+  }
+  const stakingWallet = stakingRaw || '-';
 
   const shipping = {
     recipient: formData.get('recipient') ?? '',
@@ -52,21 +56,50 @@ export async function createOrder(
 export async function submitTxid(input: {
   orderId: string;
   txHash: string;
-  chain: 'TRC20' | 'ERC20';
+  chain: 'TRC20' | 'ERC20' | 'BSC';
 }): Promise<{ ok?: true; error?: string }> {
   const supabase = createClient();
   const txHash = input.txHash.trim();
   if (!txHash) return { error: 'TXID를 입력해주세요.' };
   if (!isValidTxHash(txHash, input.chain)) return { error: '유효하지 않은 TXID 형식입니다.' };
 
+  // 중복 검사 — 같은 TXID가 다른 주문에 이미 제출됐는지
+  const { data: dup } = await supabase
+    .from('txid_records')
+    .select('id, order_id')
+    .eq('tx_hash', txHash)
+    .neq('order_id', input.orderId)
+    .maybeSingle();
+  if (dup) {
+    return { error: '이미 다른 주문에 제출된 TXID입니다. 송금 영수증을 다시 확인해주세요.' };
+  }
+
+  // 같은 주문에 이미 제출된 경우도 차단 (재제출 방지)
+  const { data: existing } = await supabase
+    .from('txid_records')
+    .select('id, tx_hash')
+    .eq('order_id', input.orderId)
+    .maybeSingle();
+  if (existing && existing.tx_hash === txHash) {
+    return { error: '이미 동일한 TXID가 제출되어 있습니다.' };
+  }
+
   const { error } = await supabase.rpc('submit_txid', {
     p_order_id: input.orderId,
     p_tx_hash: txHash,
     p_chain: input.chain,
   });
-  if (error) return { error: parseDbError(error.message) };
+  if (error) {
+    // DB 레벨 UNIQUE 제약 위반도 친절히
+    if (String(error.message).toLowerCase().includes('duplicate') ||
+        String(error.message).toLowerCase().includes('unique')) {
+      return { error: '이미 등록된 TXID입니다.' };
+    }
+    return { error: parseDbError(error.message) };
+  }
 
   revalidatePath(`/account/orders/${input.orderId}`);
+  revalidatePath(`/admin/txids`);
   return { ok: true };
 }
 
@@ -77,6 +110,8 @@ export async function confirmPayment(orderId: string): Promise<{ ok?: true; erro
   revalidatePath(`/seller/orders`);
   revalidatePath(`/seller/orders/${orderId}`);
   revalidatePath(`/account/orders/${orderId}`);
+  revalidatePath(`/admin/orders`);
+  revalidatePath(`/admin/orders/${orderId}`);
   return { ok: true };
 }
 

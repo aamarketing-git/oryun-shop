@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatKRW } from "@/lib/utils";
 import { ProductDetailSections } from "@/components/product/ProductDetailSections";
+import { CollapsibleDetail } from "@/components/product/CollapsibleDetail";
 import { BuyButton } from "@/components/product/BuyButton";
 import { ContactSeller } from "@/components/product/ContactSeller";
 
@@ -87,9 +88,16 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
         </div>
       </section>
 
-      {/* 통일 디자인 상세 섹션 — 관리자 등록분만 */}
+      {/* 통일 디자인 상세 섹션 — 관리자 등록분만 (접기/펼치기) */}
       {hasDetailPage ? (
-        <ProductDetailSections sections={(detail as { sections: unknown[] }).sections} />
+        <section className="bg-white">
+          <div className="apple-container py-2">
+            <h2 className="text-lg md:text-xl font-bold mb-4">상품 상세 정보</h2>
+          </div>
+          <CollapsibleDetail collapsedHeight={1000}>
+            <ProductDetailSections sections={(detail as { sections: unknown[] }).sections} />
+          </CollapsibleDetail>
+        </section>
       ) : (
         <section className="apple-container py-16 text-center">
           <p className="text-muted-foreground">

@@ -31,7 +31,7 @@ export default async function AccountPage() {
   return (
     <main className="apple-container py-12">
       <p className="section-eyebrow">My Account</p>
-      <h1 className="mt-2 text-4xl font-semibold">{profile?.full_name || user.email}</h1>
+      <h1 className="mt-2 text-4xl font-semibold">{profile?.name || user.email}</h1>
       <p className="mt-1 text-gray-500">{user.email}</p>
 
       {profile?.staking_wallet_address && (

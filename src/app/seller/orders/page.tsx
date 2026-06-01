@@ -28,9 +28,25 @@ export default async function SellerOrdersPage({
   if (!seller) redirect('/');
 
   const status = searchParams.status ?? 'all';
+
+  // 각 상태별 카운트 (탭 배지용)
+  const [allCount, paidCount, preparingCount, shippingCount] = await Promise.all([
+    supabase.from('orders').select('*', { count: 'exact', head: true }).eq('seller_id', seller.id),
+    supabase.from('orders').select('*', { count: 'exact', head: true }).eq('seller_id', seller.id).eq('status', 'paid'),
+    supabase.from('orders').select('*', { count: 'exact', head: true }).eq('seller_id', seller.id).eq('status', 'preparing'),
+    supabase.from('orders').select('*', { count: 'exact', head: true }).eq('seller_id', seller.id).eq('status', 'shipping'),
+  ]);
+
+  const COUNTS: Record<string, number> = {
+    all: allCount.count ?? 0,
+    paid: paidCount.count ?? 0,
+    preparing: preparingCount.count ?? 0,
+    shipping: shippingCount.count ?? 0,
+  };
+
   let q = supabase
     .from('orders')
-    .select('*, profiles!orders_customer_id_fkey(full_name, email)')
+    .select('*, profiles!orders_customer_id_fkey(name, email)')
     .eq('seller_id', seller.id)
     .order('created_at', { ascending: false });
 
@@ -42,25 +58,46 @@ export default async function SellerOrdersPage({
     <div>
       <p className="section-eyebrow">Seller</p>
       <h1 className="mt-2 text-3xl font-semibold">주문 관리</h1>
+      <p className="mt-2 text-sm text-muted-foreground">
+        💡 <strong>결제 완료</strong> 상태의 주문이 배송 등록 대상입니다.
+        관리자가 입금 확인 후 자동으로 표시됩니다.
+      </p>
 
       <div className="mt-6 flex flex-wrap gap-2">
-        {['all', 'pending_payment', 'paid', 'preparing', 'shipping', 'delivered'].map((s) => (
-          <Link
-            key={s}
-            href={`/seller/orders?status=${s}`}
-            className={`rounded-full border px-4 py-1.5 text-sm transition ${
-              status === s
-                ? 'border-black bg-black text-white'
-                : 'border-gray-300 bg-white hover:border-gray-400'
-            }`}
-          >
-            {s === 'all' ? '전체' : STATUS_LABEL[s]}
-          </Link>
-        ))}
+        {['all', 'pending_payment', 'paid', 'preparing', 'shipping', 'delivered'].map((s) => {
+          const cnt = COUNTS[s];
+          const isPaidEmphasis = s === 'paid' && cnt > 0;
+          return (
+            <Link
+              key={s}
+              href={`/seller/orders?status=${s}`}
+              className={`rounded-full border px-4 py-1.5 text-sm transition flex items-center gap-1.5 ${
+                status === s
+                  ? 'border-black bg-black text-white'
+                  : isPaidEmphasis
+                    ? 'border-[#3182F6] bg-[#E8F1FE] text-[#1B64DA] hover:bg-[#C7DCFC]'
+                    : 'border-gray-300 bg-white hover:border-gray-400'
+              }`}
+            >
+              <span>{s === 'all' ? '전체' : STATUS_LABEL[s]}</span>
+              {cnt !== undefined && cnt > 0 && (
+                <span className={`min-w-[20px] text-center rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                  status === s
+                    ? 'bg-white text-black'
+                    : isPaidEmphasis
+                      ? 'bg-[#3182F6] text-white'
+                      : 'bg-gray-100 text-gray-600'
+                }`}>
+                  {cnt}
+                </span>
+              )}
+            </Link>
+          );
+        })}
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white">
-        <table className="w-full text-sm">
+      <div className="mt-6 overflow-x-auto rounded-2xl border border-gray-200 bg-white">
+        <table className="w-full min-w-[640px] text-sm">
           <thead className="border-b border-gray-200 bg-gray-50 text-left text-xs uppercase tracking-wider text-gray-500">
             <tr>
               <th className="px-6 py-3">주문번호</th>
@@ -80,7 +117,7 @@ export default async function SellerOrdersPage({
                   </Link>
                 </td>
                 <td className="px-6 py-4 text-gray-600">
-                  {o.profiles?.full_name ?? o.profiles?.email ?? '—'}
+                  {o.profiles?.name ?? o.profiles?.email ?? '—'}
                 </td>
                 <td className="px-6 py-4 text-right">{formatKRW(Number(o.total_krw))}</td>
                 <td className="px-6 py-4 text-gray-600">

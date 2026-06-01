@@ -24,9 +24,10 @@ export function formatDate(d: string | Date): string {
 }
 
 /** USDT TXID 형식 기본 검증 (TRC20: 64-hex / ERC20: 0x + 64-hex) */
-export function isValidTxHash(hash: string, chain: "TRC20" | "ERC20" = "TRC20"): boolean {
+export function isValidTxHash(hash: string, chain: "TRC20" | "ERC20" | "BSC" = "TRC20"): boolean {
   const trimmed = hash.trim();
-  if (chain === "ERC20") return /^0x[a-fA-F0-9]{64}$/.test(trimmed);
+  // ERC20과 BSC 모두 EVM 체인 — 0x로 시작, 64자리 hex
+  if (chain === "ERC20" || chain === "BSC") return /^0x[a-fA-F0-9]{64}$/.test(trimmed);
   return /^[a-fA-F0-9]{64}$/.test(trimmed);
 }
 
@@ -66,4 +67,24 @@ export function formatPhoneKR(raw: string): string {
 export function isValidPhoneKR(raw: string): boolean {
   const digits = raw.replace(/\D/g, "");
   return digits.length >= 9 && digits.length <= 11 && /^0\d+$/.test(digits);
+}
+
+/**
+ * 비밀번호 강도 검증
+ * 규칙: 최소 8자, 영문 + 숫자 + 특수문자 포함
+ */
+export function validatePassword(password: string): { ok: boolean; msg?: string } {
+  if (!password || password.length < 8) {
+    return { ok: false, msg: "비밀번호는 8자 이상이어야 합니다." };
+  }
+  if (!/[a-zA-Z]/.test(password)) {
+    return { ok: false, msg: "영문을 포함해주세요." };
+  }
+  if (!/\d/.test(password)) {
+    return { ok: false, msg: "숫자를 포함해주세요." };
+  }
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(password)) {
+    return { ok: false, msg: "특수문자(!@#$%^&* 등)를 1개 이상 포함해주세요." };
+  }
+  return { ok: true };
 }

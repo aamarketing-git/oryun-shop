@@ -17,8 +17,8 @@ export default async function AdminInquiriesPage() {
         실제 대화는 카카오톡·전화·텔레그램 등 외부 채널에서 진행됩니다. 메타데이터만 조회 가능합니다.
       </p>
 
-      <div className="mt-8 overflow-hidden rounded-2xl border border-gray-200 bg-white">
-        <table className="w-full text-sm">
+      <div className="mt-8 overflow-x-auto rounded-2xl border border-gray-200 bg-white">
+        <table className="w-full min-w-[640px] text-sm">
           <thead className="border-b border-gray-200 bg-gray-50 text-left text-xs uppercase tracking-wider text-gray-500">
             <tr>
               <th className="px-6 py-3">상품</th>

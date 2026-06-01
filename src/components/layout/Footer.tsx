@@ -5,8 +5,10 @@ const FOOTER_COLUMNS = [
     title: "쇼핑",
     links: [
       { href: "/products", label: "전체 상품" },
-      { href: "/products?category=digital", label: "디지털" },
-      { href: "/products?category=staking", label: "스테이킹" },
+      { href: "/products?category=health", label: "건강(식품)" },
+      { href: "/products?category=cosmetics", label: "화장품" },
+      { href: "/products?category=living", label: "생활용품" },
+      { href: "/products?category=etc", label: "기타" },
     ],
   },
   {
@@ -53,6 +55,37 @@ export function Footer() {
               </ul>
             </div>
           ))}
+        </div>
+
+        {/* 고객센터 정보 — 공급자별 연락처 안내 */}
+        <div className="bg-white rounded-2xl p-5 mb-8 border border-border">
+          <h4 className="text-foreground font-semibold mb-2 text-sm">📞 고객센터 안내</h4>
+          <p className="text-[13px] text-muted-foreground mb-3">
+            제품·배송·반품 등 모든 상품 관련 문의는
+            <strong className="text-foreground"> 각 상품 페이지의 "공급자 문의"</strong> 섹션에서
+            해당 공급자에게 직접 연락해주세요.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[13px]">
+            <div className="rounded-xl bg-gray-50 p-3">
+              <p className="text-muted-foreground text-[11px] mb-1">상품 문의</p>
+              <Link
+                href="/sellers"
+                className="text-[#3182F6] font-semibold hover:underline"
+              >
+                공급자 목록 보기 →
+              </Link>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                각 공급자의 연락처를 한눈에 확인
+              </p>
+            </div>
+            <div className="rounded-xl bg-gray-50 p-3">
+              <p className="text-muted-foreground text-[11px] mb-1">상담 가능 시간</p>
+              <p className="text-foreground font-semibold">평일 10:00 ~ 18:00</p>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                점심 시간 12:00 ~ 13:00 제외
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="pt-6 border-t border-border flex flex-col md:flex-row md:items-center md:justify-between gap-3">

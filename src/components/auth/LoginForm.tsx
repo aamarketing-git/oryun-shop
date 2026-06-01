@@ -23,7 +23,7 @@ export function LoginForm() {
       setError("이메일 또는 비밀번호가 올바르지 않습니다.");
       return;
     }
-    const redirect = searchParams.get("redirect") ?? "/";
+    const redirect = searchParams.get("next") ?? searchParams.get("redirect") ?? "/";
     router.push(redirect);
     router.refresh();
   }

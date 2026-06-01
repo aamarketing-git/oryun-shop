@@ -14,8 +14,8 @@ export default async function AdminShipmentsPage() {
       <p className="section-eyebrow">Admin</p>
       <h1 className="mt-2 text-3xl font-semibold">배송 관리</h1>
 
-      <div className="mt-8 overflow-hidden rounded-2xl border border-gray-200 bg-white">
-        <table className="w-full text-sm">
+      <div className="mt-8 overflow-x-auto rounded-2xl border border-gray-200 bg-white">
+        <table className="w-full min-w-[640px] text-sm">
           <thead className="border-b border-gray-200 bg-gray-50 text-left text-xs uppercase tracking-wider text-gray-500">
             <tr>
               <th className="px-6 py-3">주문번호</th>

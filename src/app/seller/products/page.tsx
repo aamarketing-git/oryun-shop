@@ -48,8 +48,8 @@ export default async function SellerProductsPage() {
         </Link>
       </div>
 
-      <div className="mt-8 overflow-hidden rounded-2xl border border-gray-200 bg-white">
-        <table className="w-full text-sm">
+      <div className="mt-8 overflow-x-auto rounded-2xl border border-gray-200 bg-white">
+        <table className="w-full min-w-[640px] text-sm">
           <thead className="border-b border-gray-200 bg-gray-50 text-left text-xs uppercase tracking-wider text-gray-500">
             <tr>
               <th className="px-6 py-3">상품명</th>
@@ -66,14 +66,23 @@ export default async function SellerProductsPage() {
                 <tr key={p.id}>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      {p.main_image_url && (
+                      {p.main_image_url ? (
                         <img
                           src={p.main_image_url}
                           alt=""
-                          className="h-10 w-10 rounded-lg bg-gray-50 object-cover"
+                          className="h-10 w-10 rounded-lg bg-gray-50 object-cover flex-shrink-0"
                         />
+                      ) : (
+                        <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 text-[10px] flex-shrink-0">
+                          이미지<br/>없음
+                        </div>
                       )}
-                      <span className="font-medium">{p.name}</span>
+                      <div className="min-w-0">
+                        <p className="font-medium truncate">{p.name}</p>
+                        <p className="text-xs text-gray-400 font-mono mt-0.5">
+                          코드: {String(p.id).slice(0, 8).toUpperCase()}
+                        </p>
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-gray-600">{p.categories?.name ?? '—'}</td>
@@ -89,11 +98,17 @@ export default async function SellerProductsPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    {p.status === 'rejected' ? (
-                      <ResubmitButton productId={p.id} />
-                    ) : (
-                      <span className="text-xs text-gray-400">—</span>
-                    )}
+                    <div className="flex items-center justify-center gap-2">
+                      <a
+                        href={`/seller/products/${p.id}/edit`}
+                        className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition"
+                      >
+                        수정
+                      </a>
+                      {p.status === 'rejected' && (
+                        <ResubmitButton productId={p.id} />
+                      )}
+                    </div>
                   </td>
                 </tr>,
               ];

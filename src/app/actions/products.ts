@@ -149,7 +149,8 @@ export async function createSellerProduct(input: {
       short_description: input.description,
       price_krw: input.priceKrw,
       stock: input.stock,
-      main_image_url: input.imageUrl,
+      // 이미지는 승인 후 별도 업로드 — 초기엔 빈값 OK
+      main_image_url: input.imageUrl || null,
       category_id: input.categoryId || null,
       inquiry_number: input.inquiryNumber || null,
       use_direct_delivery: input.useDirectDelivery ?? false,
@@ -161,4 +162,148 @@ export async function createSellerProduct(input: {
   if (error) return { error: error.message };
   revalidatePath('/seller/products');
   return { ok: true, productId: data.id };
+}
+
+// 관리자 전용: 상품 대표 이미지만 업데이트
+export async function updateProductMainImage({
+  productId,
+  imageUrl,
+}: {
+  productId: string;
+  imageUrl: string;
+}): Promise<{ ok?: true; error?: string }> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: '인증이 필요합니다.' };
+
+  const { data: profile } = await supabase
+    .from('profiles').select('role').eq('id', user.id).single();
+  if (profile?.role !== 'admin') return { error: '관리자만 가능합니다.' };
+
+  const admin = createServiceClient();
+  const { error } = await admin
+    .from('products')
+    .update({ main_image_url: imageUrl })
+    .eq('id', productId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath('/admin/products');
+  revalidatePath('/seller/products');
+  revalidatePath(`/products/${productId}`);
+  revalidatePath('/');
+  return { ok: true };
+}
+
+// 관리자가 직접 상품을 등록 — 이미지/상세 포함 + 즉시 승인 가능
+export async function createAdminProduct(input: {
+  sellerId: string;
+  name: string;
+  description: string;
+  priceKrw: number;
+  stock: number;
+  imageUrl: string;
+  categoryId?: string;
+  inquiryNumber?: string;
+  useDirectDelivery?: boolean;
+  autoApprove?: boolean; // 즉시 승인 여부
+}): Promise<{ ok?: true; productId?: string; error?: string }> {
+  const supabase = createServiceClient();
+
+  // 관리자 권한 체크 (createClient가 아닌 createServiceClient를 쓰지만, 호출 페이지가 admin 보호)
+  const userClient = createClient();
+  const { data: { user } } = await userClient.auth.getUser();
+  if (!user) return { error: '인증이 필요합니다.' };
+  const { data: profile } = await userClient
+    .from('profiles').select('role').eq('id', user.id).single();
+  if (profile?.role !== 'admin') return { error: '관리자만 사용할 수 있습니다.' };
+
+  // seller 존재 확인
+  const { data: seller } = await supabase
+    .from('sellers')
+    .select('id')
+    .eq('id', input.sellerId)
+    .single();
+  if (!seller) return { error: '선택한 공급자를 찾을 수 없습니다.' };
+
+  const { data, error } = await supabase
+    .from('products')
+    .insert({
+      seller_id: input.sellerId,
+      name: input.name,
+      short_description: input.description,
+      price_krw: input.priceKrw,
+      stock: input.stock,
+      main_image_url: input.imageUrl || null,
+      category_id: input.categoryId || null,
+      inquiry_number: input.inquiryNumber || null,
+      use_direct_delivery: input.useDirectDelivery ?? false,
+      status: input.autoApprove ? 'approved' : 'pending',
+      ...(input.autoApprove ? { approved_at: new Date().toISOString() } : {}),
+    })
+    .select('id')
+    .single();
+
+  if (error) return { error: error.message };
+
+  revalidatePath('/admin/products');
+  revalidatePath('/seller/products');
+  revalidatePath('/');
+  return { ok: true, productId: data.id };
+}
+
+// status가 approved여도 수정은 허용. (price/stock/image 등 자유롭게)
+// 단, status는 변경 못함 (그건 관리자 권한)
+export async function updateSellerProduct(input: {
+  productId: string;
+  name: string;
+  description: string;
+  priceKrw: number;
+  stock: number;
+  imageUrl: string;
+  categoryId?: string;
+  inquiryNumber?: string;
+  useDirectDelivery?: boolean;
+}): Promise<{ ok?: true; error?: string }> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: '로그인이 필요합니다.' };
+
+  // 본인 sellers 확인
+  const { data: seller } = await supabase
+    .from('sellers')
+    .select('id, status')
+    .eq('user_id', user.id)
+    .single();
+  if (!seller) return { error: '공급자 계정이 아닙니다.' };
+  if (seller.status !== 'approved') return { error: '승인된 공급자만 상품을 수정할 수 있습니다.' };
+
+  // 본인 상품인지 확인
+  const { data: product } = await supabase
+    .from('products')
+    .select('id, seller_id, status')
+    .eq('id', input.productId)
+    .single();
+  if (!product) return { error: '상품을 찾을 수 없습니다.' };
+  if (product.seller_id !== seller.id) return { error: '본인의 상품만 수정할 수 있습니다.' };
+
+  // 가격/재고/이미지 등 업데이트
+  const { error } = await supabase
+    .from('products')
+    .update({
+      name: input.name,
+      short_description: input.description,
+      price_krw: input.priceKrw,
+      stock: input.stock,
+      main_image_url: input.imageUrl,
+      category_id: input.categoryId || null,
+      inquiry_number: input.inquiryNumber || null,
+      use_direct_delivery: input.useDirectDelivery ?? false,
+    })
+    .eq('id', input.productId);
+
+  if (error) return { error: error.message };
+  revalidatePath('/seller/products');
+  revalidatePath(`/products/${input.productId}`);
+  return { ok: true };
 }

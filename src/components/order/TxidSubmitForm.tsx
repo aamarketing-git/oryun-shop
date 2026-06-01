@@ -10,7 +10,7 @@ export default function TxidSubmitForm({
   orderId: string;
   existing?: { tx_hash: string; chain: string; status: string } | null;
 }) {
-  const [chain, setChain] = useState<'TRC20' | 'ERC20'>('TRC20');
+  const [chain, setChain] = useState<'TRC20' | 'ERC20' | 'BSC'>('TRC20');
   const [txHash, setTxHash] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -53,8 +53,8 @@ export default function TxidSubmitForm({
     <form onSubmit={onSubmit} className="space-y-4">
       <div>
         <label className="text-sm font-medium">체인</label>
-        <div className="mt-2 flex gap-3">
-          {(['TRC20', 'ERC20'] as const).map((c) => (
+        <div className="mt-2 flex gap-2 flex-wrap">
+          {(['TRC20', 'ERC20', 'BSC'] as const).map((c) => (
             <button
               key={c}
               type="button"
@@ -79,7 +79,11 @@ export default function TxidSubmitForm({
           id="txhash"
           value={txHash}
           onChange={(e) => setTxHash(e.target.value)}
-          placeholder={chain === 'TRC20' ? '64자리 16진수' : '0x로 시작하는 66자'}
+          placeholder={
+            chain === 'TRC20'
+              ? '64자리 16진수'
+              : '0x로 시작하는 66자 (EVM)'
+          }
           className="mt-2 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 font-mono text-sm focus:border-black focus:outline-none"
           required
         />

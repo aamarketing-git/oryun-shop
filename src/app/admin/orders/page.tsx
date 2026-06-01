@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { createServiceClient } from '@/lib/supabase/server';
 import { formatKRW, formatDate } from '@/lib/utils';
+import ConfirmPaymentButton from '@/components/order/ConfirmPaymentButton';
 
 const STATUS_LABEL: Record<string, string> = {
   pending_payment: '결제 대기',
@@ -48,8 +49,8 @@ export default async function AdminOrdersPage({
         ))}
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white">
-        <table className="w-full text-sm">
+      <div className="mt-6 overflow-x-auto rounded-2xl border border-gray-200 bg-white">
+        <table className="w-full min-w-[640px] text-sm">
           <thead className="border-b border-gray-200 bg-gray-50 text-left text-xs uppercase tracking-wider text-gray-500">
             <tr>
               <th className="px-6 py-3">주문번호</th>
@@ -59,12 +60,20 @@ export default async function AdminOrdersPage({
               <th className="px-6 py-3">결제</th>
               <th className="px-6 py-3 text-center">상태</th>
               <th className="px-6 py-3">일시</th>
+              <th className="px-6 py-3 text-center">관리</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {orders?.map((o: any) => (
               <tr key={o.id} className="hover:bg-gray-50">
-                <td className="px-6 py-3 font-medium">{o.order_number}</td>
+                <td className="px-6 py-3 font-medium">
+                  <Link
+                    href={`/admin/orders/${o.id}`}
+                    className="text-[#3182F6] hover:underline"
+                  >
+                    {o.order_number}
+                  </Link>
+                </td>
                 <td className="px-6 py-3 text-gray-600">{o.sellers?.business_name}</td>
                 <td className="px-6 py-3 text-gray-600">{o.profiles?.email}</td>
                 <td className="px-6 py-3 text-right">{formatKRW(Number(o.total_krw))}</td>
@@ -77,11 +86,24 @@ export default async function AdminOrdersPage({
                   </span>
                 </td>
                 <td className="px-6 py-3 text-xs text-gray-500">{formatDate(o.created_at)}</td>
+                <td className="px-6 py-3 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    {o.status === 'pending_payment' && (
+                      <ConfirmPaymentButton orderId={o.id} label="결제완료" size="sm" />
+                    )}
+                    <Link
+                      href={`/admin/orders/${o.id}`}
+                      className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition whitespace-nowrap"
+                    >
+                      상세보기
+                    </Link>
+                  </div>
+                </td>
               </tr>
             ))}
             {(!orders || orders.length === 0) && (
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                   주문이 없습니다.
                 </td>
               </tr>
